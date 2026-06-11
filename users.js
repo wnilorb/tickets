@@ -7,4 +7,5 @@
 const USERS_DATABASE = {
     "nilo": "Usina@2026",
     "nazare": "Iza@2026"
+    "fabio": "Iza@2026"
 };
