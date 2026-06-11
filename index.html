@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emissor de Tickets em Lote</title>
+    <!-- Google Fonts: Inter para a interface, Roboto Mono para os tickets impressos -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome para ícones premium -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- TELA DE LOGIN (Exibida antes do app-container se não autenticado) -->
+    <div id="login-screen" class="no-print">
+        <div class="login-card">
+            <div class="login-header">
+                <i class="fa-solid fa-shield-halved login-icon"></i>
+                <h2>Controle de Acesso</h2>
+                <p>Insira suas credenciais para acessar o TicketBatch</p>
+            </div>
+            <div class="login-body">
+                <div id="login-error" class="login-error-msg" style="display: none;">
+                    <i class="fa-solid fa-circle-exclamation"></i> Usuário ou senha incorretos.
+                </div>
+                <div class="settings-group">
+                    <label for="login-username">Usuário</label>
+                    <input type="text" id="login-username" placeholder="Digite seu usuário">
+                </div>
+                <div class="settings-group" style="margin-top: 12px;">
+                    <label for="login-password">Senha</label>
+                    <input type="password" id="login-password" placeholder="Digite sua senha">
+                </div>
+                <button id="btn-login" class="btn btn-primary" style="margin-top: 20px; width: 100%; justify-content: center; height: 42px;">
+                    <i class="fa-solid fa-right-to-bracket"></i> Acessar Sistema
+                </button>
+            </div>
+            <div class="login-footer">
+                <p>&copy; 2026 Nilo Barroso. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTAINER DA INTERFACE (Escondido na impressão) -->
+    <div id="app-container" class="no-print">
+        <!-- BARRA LATERAL / SIDEBAR -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-ticket-simple brand-icon"></i>
+                <div class="brand-text">
+                    <h1>TicketBatch</h1>
+                    <span>Emissão em Lote A4</span>
+                </div>
+            </div>
+
+            <!-- Identificação do Usuário Logado -->
+            <div class="sidebar-user-badge">
+                <div class="user-avatar"><i class="fa-solid fa-user-check"></i></div>
+                <div class="user-info">
+                    <span id="active-user-name">Carregando...</span>
+                    <button id="btn-logout" class="btn-logout-link" title="Sair do sistema"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+                </div>
+            </div>
+
+            <!-- Painel de Configurações Globais -->
+            <div class="sidebar-section">
+                <h3 class="section-title"><i class="fa-solid fa-sliders"></i> Configurações Globais</h3>
+                
+                <div class="settings-group">
+                    <label for="cfg-company-name">Nome da Empresa</label>
+                    <input type="text" id="cfg-company-name" value="IZA CONSTRUCOES E COMERCIO LTDA-USINA">
+                </div>
+
+                <div class="settings-group">
+                    <label for="cfg-company-cnpj">CNPJ</label>
+                    <input type="text" id="cfg-company-cnpj" value="84.479.351">
+                </div>
+
+                <div class="settings-group">
+                    <label for="cfg-company-address">Endereço</label>
+                    <input type="text" id="cfg-company-address" value="AVENIDA TORQUATO TAPAJOS, 12850">
+                </div>
+
+                <div class="settings-group">
+                    <label for="cfg-company-phone">Telefone</label>
+                    <input type="text" id="cfg-company-phone" value="MANAUS - AM - Tel: (92)3238-3545">
+                </div>
+
+                <div class="settings-group">
+                    <label for="cfg-default-user">Usuário Padrão (Assinatura)</label>
+                    <input type="text" id="cfg-default-user" value="RISONEIDE FERREIRA">
+                </div>
+
+                <div class="settings-group checkbox-group">
+                    <input type="checkbox" id="cfg-auto-increment" checked>
+                    <label for="cfg-auto-increment">Auto-incrementar Nota</label>
+                </div>
+            </div>
+
+            <!-- Estatísticas e Resumo -->
+            <div class="sidebar-section stats-card">
+                <h3 class="section-title"><i class="fa-solid fa-chart-pie"></i> Resumo do Lote</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Total de Tickets:</span>
+                    <span id="stat-total-tickets" class="stat-value">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Páginas A4 necessárias:</span>
+                    <span id="stat-total-pages" class="stat-value">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Peso Líquido Total:</span>
+                    <span id="stat-total-weight" class="stat-value">0 kg</span>
+                </div>
+            </div>
+
+            <!-- Rodapé da Sidebar -->
+            <div class="sidebar-footer">
+                <p style="font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Sistema de Impressão de Ticket</p>
+                <p>Desenvolvimento: Nilo Barroso</p>
+                <p style="margin-top: 2px;">Todos Direitos Reservados</p>
+            </div>
+        </aside>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <main class="main-content">
+            <!-- Topbar com Ações -->
+            <header class="topbar">
+                <div class="topbar-title">
+                    <h2>Painel de Gerenciamento</h2>
+                    <p>Preencha os dados abaixo. Cada linha gerará um ticket individual.</p>
+                </div>
+                <div class="actions-container">
+                    <button id="btn-example" class="btn btn-secondary" title="Preencher com dados de teste">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Dados Exemplo
+                    </button>
+                    <button id="btn-clear" class="btn btn-danger" title="Excluir todos os tickets">
+                        <i class="fa-solid fa-trash-can"></i> Limpar Tudo
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle">
+                            <i class="fa-solid fa-database"></i> Dados <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-content">
+                            <button id="btn-export"><i class="fa-solid fa-file-export"></i> Exportar Backup (JSON)</button>
+                            <button id="btn-import-trigger"><i class="fa-solid fa-file-import"></i> Importar Backup (JSON)</button>
+                            <input type="file" id="btn-import" accept=".json" style="display: none;">
+                        </div>
+                    </div>
+                    <button id="btn-print" class="btn btn-primary" title="Imprimir tickets em lote ou Salvar como PDF">
+                        <i class="fa-solid fa-print"></i> Imprimir Lote (A4)
+                    </button>
+                </div>
+            </header>
+
+            <!-- Grid de Trabalho -->
+            <div class="workspace-grid">
+                <!-- Seção 1: Tabela de Edição de Dados -->
+                <div class="card table-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fa-solid fa-table"></i> Dados dos Tickets</h3>
+                        <div class="card-actions">
+                            <button id="btn-add-ticket" class="btn btn-success">
+                                <i class="fa-solid fa-plus"></i> Adicionar Ticket
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="tickets-table">
+                            <thead>
+                                <tr>
+                                     <th width="80px">Ações</th>
+                                     <th width="110px">Nota Entrega</th>
+                                     <th width="130px">Data Saída</th>
+                                     <th width="95px">Hora Saída</th>
+                                     <th width="120px">Peso Bruto (kg)</th>
+                                     <th width="120px">Peso Tara (kg)</th>
+                                     <th width="120px">Líquido (kg)</th>
+                                     <th width="110px">Toneladas</th>
+                                     <th width="100px">Vol (m³)</th>
+                                     <th width="220px">Cliente</th>
+                                     <th width="220px">Material</th>
+                                     <th width="220px">Tipo Venda</th>
+                                     <th width="220px">Transportador</th>
+                                     <th width="100px">Placa</th>
+                                     <th width="220px">Destino</th>
+                                     <th width="220px">Complemento</th>
+                                     <th width="100px">Pedido</th>
+                                     <th width="200px">Usuário</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tickets-tbody">
+                                <!-- As linhas serão geradas dinamicamente via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-empty-state" id="table-empty-state">
+                        <i class="fa-solid fa-inbox"></i>
+                        <p>Nenhum ticket adicionado ainda.</p>
+                        <button id="btn-add-first-ticket" class="btn btn-primary btn-sm">Criar Primeiro Ticket</button>
+                    </div>
+                </div>
+
+                <!-- Seção 2: Pré-visualização Real-Time -->
+                <div class="card preview-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fa-solid fa-eye"></i> Pré-visualização da Folha A4 (2x2)</h3>
+                        <span class="preview-badge">Visualização em Escala</span>
+                    </div>
+                    <div class="preview-explanation">
+                        <i class="fa-solid fa-info-circle"></i> O layout abaixo é uma miniatura da folha física. A impressão final ocupará a folha A4 completa.
+                    </div>
+                    <div class="preview-container-wrapper">
+                        <div id="preview-pages-container">
+                            <!-- Páginas A4 miniaturizadas geradas por JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ÁREA DE IMPRESSÃO (Oculta na tela de edição, mostrada apenas no window.print()) -->
+    <div id="print-area" class="print-only">
+        <!-- Páginas reais renderizadas dinamicamente aqui -->
+    </div>
+
+    <script src="users.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
