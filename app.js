@@ -12,6 +12,59 @@ const DEFAULT_CONFIG = {
     autoIncrement: true
 };
 
+const DEFAULT_AUTOCOMPLETE_DB = {
+    cliente: [
+        "465 - PREFEITURA MUNICIPIO DE MANAUS",
+        "1200 - TAPA BURACO",
+        "108 - CONSTRUTORA ALFA LTDA"
+    ],
+    material: [
+        "1274 - CONCRETO BETUMINOSO USINADO A QUENTE (CBUQ - 0B)",
+        "1102 - EMULSAO ASFALTICA RR-2C"
+    ],
+    tipoVenda: [
+        "FECHAMENTO SEMANAL POR LOTE",
+        "VENDA A VISTA"
+    ],
+    transportador: [
+        "465 - PREFEITURA MUNICIPIO DE MANAUS",
+        "1200 - TAPA BURACO",
+        "312 - TRANS-RAPIDO MANAUS",
+        "108 - CONSTRUTORA ALFA LTDA"
+    ],
+    placa: [
+        "TRZ4D97",
+        "QZQ9H42",
+        "QZO6B23",
+        "JXY4H82",
+        "PHO8A12",
+        "NOY5C44"
+    ],
+    motorista: [
+        "JOSE DA SILVA",
+        "ANTONIO PEREIRA",
+        "MARCOS DOS SANTOS",
+        "CARLOS OLIVEIRA"
+    ],
+    destino: [
+        "MANAUS / AM PREFEITURA MUNICIPIO DE MANAUS - AM",
+        "MANAUS / AM TAPA BURACO",
+        "MANAUS / AM - DISTRITO INDUSTRIAL"
+    ],
+    complemento: [
+        "USINA ASFALTO PREFEITURA DE MANAUS NOVO ISRAEL",
+        "USINA ASFALTO TAPA BURACO",
+        "USINA ASFALTO PREFEITURA DE MANAUS DDC",
+        "OBRA RUA NOVE"
+    ],
+    pedido: [
+        "57",
+        "58",
+        "59",
+        "122"
+    ]
+};
+
 const SAMPLE_TICKETS = [
     {
         id: 'sample-1',
@@ -26,6 +79,7 @@ const SAMPLE_TICKETS = [
         tipoVenda: 'FECHAMENTO SEMANAL POR LOTE',
         transportador: '465 - PREFEITURA MUNICIPIO DE MANAUS',
         placa: 'QZO6B23',
+        motorista: 'JOSE DA SILVA',
         destino: 'MANAUS / AM PREFEITURA MUNICIPIO DE MANAUS - AM',
         complemento: 'USINA ASFALTO PREFEITURA DE MANAUS DDC',
         pedido: '57',
@@ -44,6 +98,7 @@ const SAMPLE_TICKETS = [
         tipoVenda: 'FECHAMENTO SEMANAL POR LOTE',
         transportador: '465 - PREFEITURA MUNICIPIO DE MANAUS',
         placa: 'JXY4H82',
+        motorista: 'ANTONIO PEREIRA',
         destino: 'MANAUS / AM PREFEITURA MUNICIPIO DE MANAUS - AM',
         complemento: 'USINA ASFALTO PREFEITURA DE MANAUS DDC',
         pedido: '58',
@@ -62,6 +117,7 @@ const SAMPLE_TICKETS = [
         tipoVenda: 'VENDA A VISTA',
         transportador: '108 - CONSTRUTORA ALFA LTDA',
         placa: 'PHO8A12',
+        motorista: 'MARCOS DOS SANTOS',
         destino: 'MANAUS / AM - DISTRITO INDUSTRIAL',
         complemento: 'OBRA RUA NOVE',
         pedido: '122',
@@ -80,6 +136,7 @@ const SAMPLE_TICKETS = [
         tipoVenda: 'FECHAMENTO SEMANAL POR LOTE',
         transportador: '312 - TRANS-RAPIDO MANAUS',
         placa: 'NOY5C44',
+        motorista: 'CARLOS OLIVEIRA',
         destino: 'MANAUS / AM PREFEITURA MUNICIPIO DE MANAUS - AM',
         complemento: 'USINA ASFALTO PREFEITURA DE MANAUS DDC',
         pedido: '59',
@@ -280,6 +337,7 @@ function addNewTicket(data = null) {
             tipoVenda: '',
             transportador: '',
             placa: '',
+            motorista: '',
             destino: '',
             complemento: '',
             pedido: '',
@@ -331,10 +389,36 @@ function duplicateTicket(id) {
         nextNota = (parseInt(origin.nota) || 0) + 1;
     }
     
+    // Calcular nova data e hora com incremento aleatório de 12 a 15 minutos
+    let nextDate = origin.date;
+    let nextTime = origin.time;
+    
+    if (origin.date && origin.time) {
+        const randomMinutes = Math.floor(Math.random() * (15 - 12 + 1)) + 12; // 12, 13, 14, ou 15
+        const [year, month, day] = origin.date.split('-').map(Number);
+        const [hours, minutes] = origin.time.split(':').map(Number);
+        
+        if (!isNaN(year) && !isNaN(month) && !isNaN(day) && !isNaN(hours) && !isNaN(minutes)) {
+            const dateObj = new Date(year, month - 1, day, hours, minutes);
+            dateObj.setMinutes(dateObj.getMinutes() + randomMinutes);
+            
+            const yyyy = dateObj.getFullYear();
+            const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const dd = String(dateObj.getDate()).padStart(2, '0');
+            const hh = String(dateObj.getHours()).padStart(2, '0');
+            const min = String(dateObj.getMinutes()).padStart(2, '0');
+            
+            nextDate = `${yyyy}-${mm}-${dd}`;
+            nextTime = `${hh}:${min}`;
+        }
+    }
+    
     const clone = {
         ...origin,
         id: Date.now() + Math.random().toString(36).substring(2, 5),
-        nota: nextNota
+        nota: nextNota,
+        date: nextDate,
+        time: nextTime
     };
     
     // Inserir clone logo após o original
@@ -558,28 +642,31 @@ function renderTable() {
                     <input type="text" class="table-input table-input-readonly col-volume" value="${t.volume !== '' ? formatVolume(t.volume) : ''}" readonly tabindex="-1">
                 </td>
                 <td>
-                    <input type="text" class="table-input" value="${t.cliente}" placeholder="Cliente" oninput="updateTicketValue('${t.id}', 'cliente', this.value)">
+                    <input type="text" class="table-input" list="dl-cliente" value="${t.cliente}" placeholder="Cliente" oninput="updateTicketValue('${t.id}', 'cliente', this.value)" onblur="learnAutocompleteValue('cliente', this.value)">
                 </td>
                 <td>
-                    <input type="text" class="table-input" value="${t.material}" placeholder="Material" oninput="updateTicketValue('${t.id}', 'material', this.value)">
+                    <input type="text" class="table-input" list="dl-material" value="${t.material}" placeholder="Material" oninput="updateTicketValue('${t.id}', 'material', this.value)" onblur="learnAutocompleteValue('material', this.value)">
                 </td>
                 <td>
-                    <input type="text" class="table-input" value="${t.tipoVenda}" placeholder="Tipo de Venda" oninput="updateTicketValue('${t.id}', 'tipoVenda', this.value)">
+                    <input type="text" class="table-input" list="dl-tipoVenda" value="${t.tipoVenda}" placeholder="Tipo de Venda" oninput="updateTicketValue('${t.id}', 'tipoVenda', this.value)" onblur="learnAutocompleteValue('tipoVenda', this.value)">
                 </td>
                 <td>
-                    <input type="text" class="table-input" value="${t.transportador}" placeholder="Transportador" oninput="updateTicketValue('${t.id}', 'transportador', this.value)">
+                    <input type="text" class="table-input" list="dl-transportador" value="${t.transportador}" placeholder="Transportador" oninput="updateTicketValue('${t.id}', 'transportador', this.value)" onblur="learnAutocompleteValue('transportador', this.value)">
                 </td>
                 <td>
-                    <input type="text" class="table-input" value="${t.placa}" placeholder="Placa" oninput="updateTicketValue('${t.id}', 'placa', this.value)">
+                    <input type="text" class="table-input" list="dl-placa" value="${t.placa}" placeholder="Placa" oninput="updateTicketValue('${t.id}', 'placa', this.value)" onblur="learnAutocompleteValue('placa', this.value)">
                 </td>
                 <td>
-                    <input type="text" class="table-input" value="${t.destino}" placeholder="Destino" oninput="updateTicketValue('${t.id}', 'destino', this.value)">
+                    <input type="text" class="table-input" list="dl-motorista" value="${t.motorista || ''}" placeholder="Motorista" oninput="updateTicketValue('${t.id}', 'motorista', this.value)" onblur="learnAutocompleteValue('motorista', this.value)">
                 </td>
                 <td>
-                    <input type="text" class="table-input" value="${t.complemento}" placeholder="Complemento" oninput="updateTicketValue('${t.id}', 'complemento', this.value)">
+                    <input type="text" class="table-input" list="dl-destino" value="${t.destino}" placeholder="Destino" oninput="updateTicketValue('${t.id}', 'destino', this.value)" onblur="learnAutocompleteValue('destino', this.value)">
                 </td>
                 <td>
-                    <input type="text" class="table-input" value="${t.pedido || ''}" placeholder="Pedido" oninput="updateTicketValue('${t.id}', 'pedido', this.value)">
+                    <input type="text" class="table-input" list="dl-complemento" value="${t.complemento}" placeholder="Complemento" oninput="updateTicketValue('${t.id}', 'complemento', this.value)" onblur="learnAutocompleteValue('complemento', this.value)">
+                </td>
+                <td>
+                    <input type="text" class="table-input" list="dl-pedido" value="${t.pedido || ''}" placeholder="Pedido" oninput="updateTicketValue('${t.id}', 'pedido', this.value)" onblur="learnAutocompleteValue('pedido', this.value)">
                 </td>
                 <td>
                     <input type="text" class="table-input" value="${t.usuario}" placeholder="Usuário" oninput="updateTicketValue('${t.id}', 'usuario', this.value)">
@@ -715,7 +802,7 @@ function generateTicketHTML(ticket) {
                 </div>
                 <div class="signature-line-wrapper">
                     <div class="signature-line"></div>
-                    <div class="signature-name">MOTORISTA_ASSINATURA_TICKE</div>
+                    <div class="signature-name">${ticket.motorista || 'MOTORISTA'}</div>
                 </div>
             </div>
         </div>
@@ -776,6 +863,7 @@ function renderAll() {
     renderTable();
     renderPreviewAndPrint();
     updateStats();
+    updateAutocompleteDatabase();
 }
 
 // CONTROLE DE AUTENTICAÇÃO
@@ -848,6 +936,114 @@ function handleLogin() {
 function handleLogout() {
     sessionStorage.clear();
     window.location.reload();
+}
+
+// ESCAPAR CARACTERES HTML ESPECIAIS
+function escapeHTML(str) {
+    if (!str) return '';
+    return str.toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// FILTRAR LIXOS E PREFIXOS DO HISTÓRICO DE AUTOCOMPLETAR
+function cleanupAutocompleteDB(db) {
+    const fields = Object.keys(db);
+    fields.forEach(field => {
+        if (!Array.isArray(db[field])) {
+            db[field] = [];
+            return;
+        }
+        // Remove duplicados e valores vazios
+        let uniqueVals = [...new Set(db[field].map(v => (v || '').trim()).filter(Boolean))];
+        
+        // Heurística de prefixo: remove itens curtos (digitação parcial) que sejam prefixos de termos mais longos
+        uniqueVals = uniqueVals.filter(val => {
+            const isGarbage = uniqueVals.some(otherVal => 
+                otherVal !== val && 
+                otherVal.startsWith(val) && 
+                (val.length < 6 || otherVal.length - val.length > 2)
+            );
+            return !isGarbage;
+        });
+        
+        db[field] = uniqueVals;
+    });
+    return db;
+}
+
+// ATUALIZAR E PERSISTIR HISTÓRICO DE AUTOCOMPLETAR (Carregamento / Carga em lote)
+function updateAutocompleteDatabase() {
+    const saved = localStorage.getItem('ticket_autocomplete_db');
+    let db = saved ? JSON.parse(saved) : { ...DEFAULT_AUTOCOMPLETE_DB };
+
+    const fields = ['cliente', 'material', 'tipoVenda', 'transportador', 'placa', 'motorista', 'destino', 'complemento', 'pedido'];
+    fields.forEach(f => {
+        if (!db[f]) db[f] = [];
+    });
+
+    let updated = false;
+
+    state.tickets.forEach(ticket => {
+        fields.forEach(field => {
+            const val = (ticket[field] || '').trim();
+            if (val && !db[field].includes(val)) {
+                db[field].push(val);
+                updated = true;
+            }
+        });
+    });
+
+    // Sempre executar limpeza automática
+    db = cleanupAutocompleteDB(db);
+
+    if (updated || !saved) {
+        localStorage.setItem('ticket_autocomplete_db', JSON.stringify(db));
+    }
+    
+    renderDatalists(db);
+}
+
+// APRENDER NOVO VALOR PARA AUTOCOMPLETAR (Disparado quando o input perde o foco - blur)
+function learnAutocompleteValue(field, value) {
+    const val = (value || '').trim();
+    if (!val) return;
+    
+    const autocompleteFields = ['cliente', 'material', 'tipoVenda', 'transportador', 'placa', 'motorista', 'destino', 'complemento', 'pedido'];
+    if (!autocompleteFields.includes(field)) return;
+    
+    const saved = localStorage.getItem('ticket_autocomplete_db');
+    let db = saved ? JSON.parse(saved) : { ...DEFAULT_AUTOCOMPLETE_DB };
+    
+    autocompleteFields.forEach(f => {
+        if (!db[f]) db[f] = [];
+    });
+    
+    // Se o valor já existe, não precisamos alterar nada
+    if (db[field].includes(val)) return;
+    
+    // Adicionar e limpar lixos residuais
+    db[field].push(val);
+    db = cleanupAutocompleteDB(db);
+    
+    localStorage.setItem('ticket_autocomplete_db', JSON.stringify(db));
+    renderDatalists(db);
+}
+
+// RENDERIZAR OPÇÕES NAS DATALISTS
+function renderDatalists(db) {
+    const fields = ['cliente', 'material', 'tipoVenda', 'transportador', 'placa', 'motorista', 'destino', 'complemento', 'pedido'];
+    fields.forEach(field => {
+        const dl = document.getElementById(`dl-${field}`);
+        if (dl) {
+            // Ordenar alfabeticamente para melhor experiência do usuário
+            const sortedVals = [...db[field]].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
+            dl.innerHTML = sortedVals.map(val => `<option value="${escapeHTML(val)}"></option>`).join('');
+        }
+    });
 }
 
 // INICIAR APLICAÇÃO

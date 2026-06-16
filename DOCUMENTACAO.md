@@ -51,6 +51,18 @@ Para alcançar a fidelidade de 100% com o modelo original do ticket físico, for
 9.  **Integração do Campo Pedido**:
     *   *Problema*: O pedido saía embutido no complemento.
     *   *Solução*: Separado o preenchimento e programada a quebra de linha automática no ticket para exibir o pedido perfeitamente alinhado abaixo do Complemento.
+10. **Assinatura do Motorista Dinâmica**:
+    *   *Problema*: O ticket físico exibia apenas o rótulo fixo `MOTORISTA_ASSINATURA_TICKE` no campo destinado à assinatura do motorista. O operador não conseguia digitar o nome do motorista na tabela de edição.
+    *   *Solução*: Adicionado um campo de texto "Motorista" na tabela de dados (entre "Placa" e "Destino") e atualizada a renderização dos tickets para imprimir o nome correspondente do motorista (com fallback para "MOTORISTA" se vazio).
+11. **Incremento de Horário na Duplicação**:
+    *   *Problema*: Ao duplicar um ticket, o sistema mantinha exatamente o mesmo horário do ticket original, exigindo que o operador editasse manualmente a hora de cada novo registro para simular saídas sequenciais.
+    *   *Solução*: Programado um incremento automático e aleatório entre 12 e 15 minutos no horário (`time`) do ticket clonado. O cálculo utiliza o objeto `Date` nativo, ajustando automaticamente a data (`date`) para o dia seguinte caso o horário ultrapasse a meia-noite.
+12. **Autocompletar Inteligente e Persistente**:
+    *   *Problema*: O operador necessitava digitar repetidamente dados comuns que já haviam sido digitados anteriormente (como Clientes, Materiais, Motoristas, Placas, etc.), tornando o preenchimento de lotes demorado.
+    *   *Solução*: Implementado um mecanismo de autocompletar inteligente com elementos `<datalist>` do HTML5 em 9 campos de texto. O sistema aprende automaticamente novos termos inseridos e os armazena de forma persistente e independente no `localStorage`, disponibilizando as sugestões instantaneamente à medida que o operador digita, mesmo em dias/sessões posteriores.
+13. **Visibilidade do Ícone de Calendário/Relógio**:
+    *   *Problema*: Em alguns navegadores baseados em Chromium (como Chrome e Edge), o ícone do calendário/relógio nos inputs de Data e Hora sumia devido ao espaço interno (padding) apertado e à largura reduzida das colunas. Além disso, o ícone nativo ficava pouco visível sobre o tema escuro.
+    *   *Solução*: Ajustadas as larguras das colunas de "Data Saída" para `145px` e "Hora Saída" para `100px` no `index.html`. No `styles.css`, reduzimos as margens internas (padding) desses inputs e aplicamos `filter: invert(1)` para tornar os ícones nativos brancos e perfeitamente visíveis no tema escuro.
 
 ---
 

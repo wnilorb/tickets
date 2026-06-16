@@ -173,8 +173,8 @@
                                 <tr>
                                      <th width="80px">Ações</th>
                                      <th width="110px">Nota Entrega</th>
-                                     <th width="130px">Data Saída</th>
-                                     <th width="95px">Hora Saída</th>
+                                     <th width="145px">Data Saída</th>
+                                     <th width="100px">Hora Saída</th>
                                      <th width="120px">Peso Bruto (kg)</th>
                                      <th width="120px">Peso Tara (kg)</th>
                                      <th width="120px">Líquido (kg)</th>
@@ -185,6 +185,7 @@
                                      <th width="220px">Tipo Venda</th>
                                      <th width="220px">Transportador</th>
                                      <th width="100px">Placa</th>
+                                     <th width="200px">Motorista</th>
                                      <th width="220px">Destino</th>
                                      <th width="220px">Complemento</th>
                                      <th width="100px">Pedido</th>
@@ -226,6 +227,17 @@
     <div id="print-area" class="print-only">
         <!-- Páginas reais renderizadas dinamicamente aqui -->
     </div>
+
+    <!-- DATALISTS PARA AUTOCOMPLETAR -->
+    <datalist id="dl-cliente"></datalist>
+    <datalist id="dl-material"></datalist>
+    <datalist id="dl-tipoVenda"></datalist>
+    <datalist id="dl-transportador"></datalist>
+    <datalist id="dl-placa"></datalist>
+    <datalist id="dl-motorista"></datalist>
+    <datalist id="dl-destino"></datalist>
+    <datalist id="dl-complemento"></datalist>
+    <datalist id="dl-pedido"></datalist>
 
     <script src="users.js"></script>
     <script src="app.js"></script>

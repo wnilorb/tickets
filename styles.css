@@ -521,6 +521,31 @@ input[type="number"].table-input {
     text-align: right;
 }
 
+/* Customização e visibilidade dos indicadores de data/hora */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1); /* Torna o ícone do calendário/relógio visível no fundo escuro */
+    cursor: pointer;
+    opacity: 0.7;
+    transition: var(--transition-fast);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+/* Reduzir padding para dar mais espaço ao ícone do calendário/relógio */
+input[type="date"].table-input {
+    padding-right: 6px;
+    padding-left: 8px;
+}
+
+input[type="time"].table-input {
+    padding-right: 6px;
+    padding-left: 8px;
+}
+
 /* Ações nas linhas */
 .row-actions {
     display: flex;
