@@ -9,7 +9,27 @@ const DEFAULT_CONFIG = {
     companyAddress: 'AVENIDA TORQUATO TAPAJOS, 12850',
     companyPhone: 'MANAUS - AM - Tel: (92)3238-3545',
     defaultUser: 'RISONEIDE FERREIRA',
-    autoIncrement: true
+    autoIncrement: true,
+    printLayout: '2x2'
+};
+
+const COLUMN_MAPPING = {
+    nota: ['nota', 'nota entrega', 'num nota', 'numero nota', 'nº nota', 'documento', 'nfe'],
+    date: ['data', 'data saida', 'data de saida', 'data emissao', 'emissao', 'dia'],
+    time: ['hora', 'hora saida', 'hora de saida', 'horario'],
+    pesoBruto: ['peso bruto', 'bruto', 'peso bruto (kg)', 'peso_bruto', 'bruto (kg)', 'pesobruto'],
+    pesoTara: ['tara', 'peso tara', 'peso tara (kg)', 'peso_tara', 'tara (kg)', 'pesotara'],
+    volume: ['volume', 'vol', 'volume (m3)', 'volume (m³)', 'm3', 'm³'],
+    cliente: ['cliente', 'nome cliente', 'destinatario', 'razao social'],
+    material: ['material', 'produto', 'descricao', 'item'],
+    tipoVenda: ['tipo venda', 'tipo de venda', 'venda', 'tipo_venda', 'operacao'],
+    transportador: ['transportador', 'transportadora', 'empresa transporte'],
+    placa: ['placa', 'veiculo', 'placa veiculo'],
+    motorista: ['motorista', 'nome motorista', 'condutor'],
+    destino: ['destino', 'cidade', 'local entrega'],
+    complemento: ['complemento', 'observacao', 'obs'],
+    pedido: ['pedido', 'num pedido', 'numero pedido', 'nº pedido'],
+    usuario: ['usuario', 'operador', 'emissor']
 };
 
 const DEFAULT_AUTOCOMPLETE_DB = {
@@ -158,6 +178,7 @@ const dom = {
     companyPhone: document.getElementById('cfg-company-phone'),
     defaultUser: document.getElementById('cfg-default-user'),
     autoIncrement: document.getElementById('cfg-auto-increment'),
+    printLayout: document.getElementById('cfg-print-layout'),
     
     statTotalTickets: document.getElementById('stat-total-tickets'),
     statTotalPages: document.getElementById('stat-total-pages'),
@@ -168,6 +189,8 @@ const dom = {
     btnExport: document.getElementById('btn-export'),
     btnImportTrigger: document.getElementById('btn-import-trigger'),
     btnImport: document.getElementById('btn-import'),
+    btnImportSheetTrigger: document.getElementById('btn-import-sheet-trigger'),
+    btnImportSheet: document.getElementById('btn-import-sheet'),
     btnPrint: document.getElementById('btn-print'),
     
     btnAddTicket: document.getElementById('btn-add-ticket'),
@@ -176,7 +199,9 @@ const dom = {
     tbody: document.getElementById('tickets-tbody'),
     emptyState: document.getElementById('table-empty-state'),
     previewContainer: document.getElementById('preview-pages-container'),
-    printArea: document.getElementById('print-area')
+    printArea: document.getElementById('print-area'),
+    dropdownToggle: document.querySelector('.dropdown-toggle'),
+    dropdownContent: document.querySelector('.dropdown-content')
 };
 
 // FORMATADORES AUXILIARES
@@ -244,6 +269,7 @@ function init() {
     dom.companyPhone.value = state.config.companyPhone;
     dom.defaultUser.value = state.config.defaultUser;
     dom.autoIncrement.checked = state.config.autoIncrement;
+    if (dom.printLayout) dom.printLayout.value = state.config.printLayout || '2x2';
     
     // Configurar Event Listeners Globais
     setupGlobalListeners();
@@ -269,6 +295,15 @@ function setupGlobalListeners() {
         state.config.autoIncrement = e.target.checked;
         saveConfig();
     });
+    
+    if (dom.printLayout) {
+        dom.printLayout.addEventListener('change', (e) => {
+            state.config.printLayout = e.target.value;
+            saveConfig();
+            renderPreviewAndPrint();
+            updateStats();
+        });
+    }
 
     // Botões de Ações
     dom.btnExample.addEventListener('click', loadSampleData);
@@ -276,6 +311,32 @@ function setupGlobalListeners() {
     dom.btnExport.addEventListener('click', exportBackup);
     dom.btnImportTrigger.addEventListener('click', () => dom.btnImport.click());
     dom.btnImport.addEventListener('change', importBackup);
+    
+    dom.btnImportSheetTrigger.addEventListener('click', () => dom.btnImportSheet.click());
+    dom.btnImportSheet.addEventListener('change', handleImportSheet);
+    
+    // Abrir/Fechar dropdown "Dados" ao clicar
+    if (dom.dropdownToggle && dom.dropdownContent) {
+        dom.dropdownToggle.addEventListener('click', (e) => {
+            e.stopPropagation(); // Evita fechar imediatamente ao disparar clique no document
+            dom.dropdownContent.classList.toggle('show');
+        });
+        
+        // Fechar se clicar fora do dropdown
+        document.addEventListener('click', (e) => {
+            if (!dom.dropdownToggle.contains(e.target) && !dom.dropdownContent.contains(e.target)) {
+                dom.dropdownContent.classList.remove('show');
+            }
+        });
+
+        // Fechar ao clicar em qualquer item dentro do dropdown
+        dom.dropdownContent.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                dom.dropdownContent.classList.remove('show');
+            });
+        });
+    }
+    
     dom.btnPrint.addEventListener('click', () => window.print());
     
     dom.btnAddTicket.addEventListener('click', () => addNewTicket());
@@ -503,6 +564,7 @@ function importBackup(e) {
                     dom.companyPhone.value = state.config.companyPhone;
                     dom.defaultUser.value = state.config.defaultUser;
                     dom.autoIncrement.checked = state.config.autoIncrement;
+                    if (dom.printLayout) dom.printLayout.value = state.config.printLayout || '2x2';
                     
                     saveConfig();
                 }
@@ -520,6 +582,185 @@ function importBackup(e) {
     reader.readAsText(file);
     // Limpar o valor do input file para permitir importar o mesmo arquivo novamente se necessário
     dom.btnImport.value = '';
+}
+
+// IMPORTAR DADOS DE PLANILHA (Excel/CSV)
+function handleImportSheet(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        try {
+            const data = new Uint8Array(evt.target.result);
+            const workbook = XLSX.read(data, { type: 'array', cellDates: true, dateNF: 'yyyy-mm-dd' });
+            
+            // Obter a primeira planilha
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            
+            // Converter planilha para array de objetos JSON (primeira linha = cabeçalhos)
+            const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+            
+            if (rawRows.length === 0) {
+                alert('Nenhum dado encontrado na planilha.');
+                return;
+            }
+            
+            // Confirmar com o usuário a importação
+            if (confirm(`Foram encontrados ${rawRows.length} registros na planilha.\n\nDeseja ADICIONAR esses registros ao lote atual de tickets?\n(Para substituir o lote atual, clique em 'Cancelar', exclua os tickets atuais pelo botão 'Limpar Tudo' e importe a planilha novamente.)`)) {
+                // Adicionar ao lote existente
+                const newTickets = rawRows.map(row => mapRowToTicket(row));
+                state.tickets = state.tickets.concat(newTickets);
+                
+                saveTickets();
+                renderAll();
+                alert(`${newTickets.length} tickets importados e adicionados com sucesso!`);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Erro ao ler a planilha. Certifique-se de carregar um arquivo Excel (.xlsx, .xls) ou CSV válido.');
+        }
+    };
+    reader.readAsArrayBuffer(file);
+    // Limpar o valor do input file para permitir re-importar se necessário
+    dom.btnImportSheet.value = '';
+}
+
+// MAPEAR LINHA DA PLANILHA PARA ESTRUTURA DO TICKET (USANDO SINÔNIMOS)
+function mapRowToTicket(row) {
+    const ticket = {
+        id: Date.now() + Math.random().toString(36).substring(2, 5) + Math.random().toString(36).substring(2, 5),
+        nota: '',
+        date: '',
+        time: '',
+        pesoBruto: '',
+        pesoTara: '',
+        volume: '',
+        cliente: '',
+        material: '',
+        tipoVenda: '',
+        transportador: '',
+        placa: '',
+        motorista: '',
+        destino: '',
+        complemento: '',
+        pedido: '',
+        usuario: state.config.defaultUser || ''
+    };
+
+    // Para cada campo do ticket, encontrar se existe alguma coluna correspondente na linha
+    for (const [field, synonyms] of Object.entries(COLUMN_MAPPING)) {
+        const matchedKey = Object.keys(row).find(key => {
+            const normalizedKey = key.toLowerCase().trim()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
+                .replace(/[^a-z0-9]/g, ''); // remove espaços e caracteres especiais
+                
+            return synonyms.some(syn => {
+                const normalizedSyn = syn.toLowerCase().trim()
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[^a-z0-9]/g, '');
+                return normalizedKey === normalizedSyn;
+            });
+        });
+
+        if (matchedKey !== undefined) {
+            let val = row[matchedKey];
+            
+            // Sanitização de dados de acordo com o tipo do campo
+            if (field === 'nota' || field === 'pesoBruto' || field === 'pesoTara') {
+                val = val === '' ? '' : parseInt(val);
+                if (isNaN(val)) val = '';
+            } else if (field === 'volume') {
+                val = val === '' ? '' : parseFloat(val);
+                if (isNaN(val)) val = '';
+            } else if (field === 'date') {
+                val = formatExcelDate(val);
+            } else if (field === 'time') {
+                val = formatExcelTime(val);
+            } else {
+                val = (val === null || val === undefined) ? '' : String(val).trim();
+            }
+            
+            ticket[field] = val;
+        }
+    }
+    
+    // Se o peso bruto e tara foram importados, recalcular líquido/volume
+    const bruto = parseInt(ticket.pesoBruto) || 0;
+    const tara = parseInt(ticket.pesoTara) || 0;
+    if (bruto > 0 && tara > 0) {
+        const liquido = Math.max(0, bruto - tara);
+        if (!ticket.volume) {
+            const volume = liquido > 0 ? (liquido / 2400) : 0;
+            ticket.volume = volume > 0 ? parseFloat(volume.toFixed(4)) : '';
+        }
+    }
+
+    return ticket;
+}
+
+// FORMATAR DATA EXCEL PARA YYYY-MM-DD
+function formatExcelDate(val) {
+    if (!val) return '';
+    
+    if (val instanceof Date) {
+        const yyyy = val.getFullYear();
+        const mm = String(val.getMonth() + 1).padStart(2, '0');
+        const dd = String(val.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }
+    
+    // Se for string
+    if (typeof val === 'string') {
+        val = val.trim();
+        // Verificar formato brasileiro DD/MM/AAAA ou DD-MM-AAAA
+        const brDateRegex = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/;
+        const match = val.match(brDateRegex);
+        if (match) {
+            return `${match[3]}-${match[2].padStart(2, '0')}-${match[1].padStart(2, '0')}`;
+        }
+        // Verificar formato ISO YYYY-MM-DD
+        const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (isoDateRegex.test(val)) return val;
+    }
+    
+    return '';
+}
+
+// FORMATAR HORA EXCEL PARA HH:MM
+function formatExcelTime(val) {
+    if (val === null || val === undefined || val === '') return '';
+    
+    if (val instanceof Date) {
+        const hh = String(val.getHours()).padStart(2, '0');
+        const min = String(val.getMinutes()).padStart(2, '0');
+        return `${hh}:${min}`;
+    }
+    
+    if (typeof val === 'string') {
+        val = val.trim();
+        // Se for hh:mm
+        const hhMmRegex = /^(\d{1,2}):(\d{2})$/;
+        if (hhMmRegex.test(val)) {
+            const parts = val.split(':');
+            return `${parts[0].padStart(2, '0')}:${parts[1]}`;
+        }
+        // Se for hh:mm:ss
+        const hhMmSsRegex = /^(\d{1,2}):(\d{2}):(\d{2})$/;
+        const match = val.match(hhMmSsRegex);
+        if (match) return `${match[1].padStart(2, '0')}:${match[2]}`;
+    }
+    
+    if (typeof val === 'number') {
+        // Tratar fração decimal do dia (ex: 0.5 = 12:00)
+        const totalMinutes = Math.round(val * 24 * 60);
+        const hh = String(Math.floor(totalMinutes / 60)).padStart(2, '0');
+        const min = String(totalMinutes % 60).padStart(2, '0');
+        return `${hh}:${min}`;
+    }
+    
+    return '';
 }
 
 // ATUALIZAR UM CAMPO ESPECÍFICO DE UM TICKET SEM RE-RENDERIZAR A TABELA
@@ -560,10 +801,15 @@ function updateTicketValue(id, field, value) {
     }
     
     saveTickets();
-    
-    // Atualizar estatísticas e o preview
     updateStats();
-    renderPreviewAndPrint();
+    
+    // Otimização para Lotes Grandes: Atualizar apenas o ticket específico na tela ao invés de re-renderizar todas as páginas
+    const previewTicket = dom.previewContainer.querySelector(`.ticket-wrapper[data-id="${id}"]`);
+    const printTicket = dom.printArea.querySelector(`.ticket-wrapper[data-id="${id}"]`);
+    const newTicketHTML = generateTicketHTML(ticket);
+    
+    if (previewTicket) previewTicket.outerHTML = newTicketHTML;
+    if (printTicket) printTicket.outerHTML = newTicketHTML;
 }
 
 // SISTEMA DE FOCO INTELIGENTE
@@ -681,10 +927,12 @@ function renderTable() {
 // ATUALIZAR ESTATÍSTICAS
 function updateStats() {
     const total = state.tickets.length;
-    dom.statTotalTickets.innerText = total;
+    if (dom.statTotalTickets) dom.statTotalTickets.innerText = total;
     
-    const pages = Math.ceil(total / 4);
-    dom.statTotalPages.innerText = pages;
+    const isLayout2 = state.config.printLayout === '1x2';
+    const ticketsPerPage = isLayout2 ? 2 : 4;
+    const pages = Math.ceil(total / ticketsPerPage);
+    if (dom.statTotalPages) dom.statTotalPages.innerText = pages;
     
     let totalWeight = 0;
     state.tickets.forEach(t => {
@@ -693,7 +941,7 @@ function updateStats() {
         totalWeight += Math.max(0, pb - pt);
     });
     
-    dom.statTotalWeight.innerText = formatWeightKG(totalWeight) + ' kg';
+    if (dom.statTotalWeight) dom.statTotalWeight.innerText = formatWeightKG(totalWeight) + ' kg';
 }
 
 // ENCAPSULAR CÓDIGO HTML DO TICKET INDIVIDUAL
@@ -713,7 +961,7 @@ function generateTicketHTML(ticket) {
     const dateTimeStr = dateFormatted && ticket.time ? `${dateFormatted} - ${ticket.time}` : `${dateFormatted} ${ticket.time}`;
     
     return `
-        <div class="ticket-wrapper">
+        <div class="ticket-wrapper" data-id="${ticket.id || ''}">
             <div class="ticket-header">
                 <div class="ticket-header-title">
                     <span>NOTA DE ENTREGA</span>
@@ -784,6 +1032,11 @@ function generateTicketHTML(ticket) {
                     <span class="ticket-value">${ticket.placa || ''}</span>
                 </div>
                 <div class="ticket-row">
+                    <span class="ticket-label">Motorista</span>
+                    <span class="ticket-colon">:</span>
+                    <span class="ticket-value">${ticket.motorista || ''}</span>
+                </div>
+                <div class="ticket-row">
                     <span class="ticket-label">Destino</span>
                     <span class="ticket-colon">:</span>
                     <span class="ticket-value">${ticket.destino || ''}</span>
@@ -820,38 +1073,63 @@ function renderPreviewAndPrint() {
         return;
     }
     
-    const numPages = Math.ceil(totalTickets / 4);
+    const isLayout2 = state.config.printLayout === '1x2';
+    
+    // Atualizar badge do título
+    const badge = document.getElementById('preview-layout-badge');
+    if (badge) {
+        badge.innerText = isLayout2 ? '(1x2)' : '(2x2)';
+    }
+    
+    const ticketsPerPage = isLayout2 ? 2 : 4;
+    const numPages = Math.ceil(totalTickets / ticketsPerPage);
     let previewHTML = '';
     let printHTML = '';
     
     for (let p = 0; p < numPages; p++) {
-        const startIndex = p * 4;
+        const startIndex = p * ticketsPerPage;
         
-        // Obter os 4 tickets da página (ou null se não houver)
-        const t1 = tickets[startIndex] || null;
-        const t2 = tickets[startIndex + 1] || null;
-        const t3 = tickets[startIndex + 2] || null;
-        const t4 = tickets[startIndex + 3] || null;
-        
-        // GERAÇÃO PARA O PREVIEW TELA (Miniatura com escala)
-        previewHTML += `
-            <div class="a4-page-preview">
-                ${generateTicketHTML(t1)}
-                ${generateTicketHTML(t2)}
-                ${generateTicketHTML(t3)}
-                ${generateTicketHTML(t4)}
-            </div>
-        `;
-        
-        // GERAÇÃO PARA A IMPRESSÃO FISICA (A4 real)
-        printHTML += `
-            <div class="a4-page">
-                ${generateTicketHTML(t1)}
-                ${generateTicketHTML(t2)}
-                ${generateTicketHTML(t3)}
-                ${generateTicketHTML(t4)}
-            </div>
-        `;
+        if (isLayout2) {
+            const t1 = tickets[startIndex] || null;
+            const t2 = tickets[startIndex + 1] || null;
+            
+            previewHTML += `
+                <div class="a4-page-preview layout-1x2">
+                    ${generateTicketHTML(t1)}
+                    ${generateTicketHTML(t2)}
+                </div>
+            `;
+            
+            printHTML += `
+                <div class="a4-page layout-1x2">
+                    ${generateTicketHTML(t1)}
+                    ${generateTicketHTML(t2)}
+                </div>
+            `;
+        } else {
+            const t1 = tickets[startIndex] || null;
+            const t2 = tickets[startIndex + 1] || null;
+            const t3 = tickets[startIndex + 2] || null;
+            const t4 = tickets[startIndex + 3] || null;
+            
+            previewHTML += `
+                <div class="a4-page-preview">
+                    ${generateTicketHTML(t1)}
+                    ${generateTicketHTML(t2)}
+                    ${generateTicketHTML(t3)}
+                    ${generateTicketHTML(t4)}
+                </div>
+            `;
+            
+            printHTML += `
+                <div class="a4-page">
+                    ${generateTicketHTML(t1)}
+                    ${generateTicketHTML(t2)}
+                    ${generateTicketHTML(t3)}
+                    ${generateTicketHTML(t4)}
+                </div>
+            `;
+        }
     }
     
     dom.previewContainer.innerHTML = previewHTML;

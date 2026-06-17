@@ -17,6 +17,7 @@ O sistema é uma aplicação web de página única (Single Page Application - SP
 *   **Sistema de Backup (JSON)**: Botões para exportar todo o lote de tickets como arquivo de backup e importá-lo posteriormente.
 *   **Navegação Inteligente**: Pressionar a tecla `Enter` navega horizontalmente entre os campos de digitação. No fim de uma linha, cria um novo ticket de forma automática.
 *   **Visualização WYSIWYG**: Uma miniatura da folha A4 física que se atualiza na tela em tempo real à medida que o usuário escreve na tabela.
+*   **Importação Avançada de Planilha (Excel/CSV)**: O operador pode carregar arquivos `.xlsx`, `.xls` ou `.csv` diretamente. O sistema mapeia os cabeçalhos automaticamente de forma inteligente, tolerando variações de nomes, acentos e espaços (ex: mapeando "Data Saída" ou "Emissão" para o campo Data). Além disso, converte nativamente as representações de data e hora do Excel.
 
 ---
 
@@ -63,6 +64,18 @@ Para alcançar a fidelidade de 100% com o modelo original do ticket físico, for
 13. **Visibilidade do Ícone de Calendário/Relógio**:
     *   *Problema*: Em alguns navegadores baseados em Chromium (como Chrome e Edge), o ícone do calendário/relógio nos inputs de Data e Hora sumia devido ao espaço interno (padding) apertado e à largura reduzida das colunas. Além disso, o ícone nativo ficava pouco visível sobre o tema escuro.
     *   *Solução*: Ajustadas as larguras das colunas de "Data Saída" para `145px` e "Hora Saída" para `100px` no `index.html`. No `styles.css`, reduzimos as margens internas (padding) desses inputs e aplicamos `filter: invert(1)` para tornar os ícones nativos brancos e perfeitamente visíveis no tema escuro.
+14. **Layout 2 de Impressão (2 por folha)**:
+    *   *Problema*: Necessidade de imprimir apenas 2 tickets por folha A4 (um na parte superior e outro na inferior, centralizados).
+    *   *Solução*: Adicionado controle de layout nas configurações globais que ajusta o grid na tela de pré-visualização e nas folhas reais de impressão física (Layout 1x2 com largura física mantida em 105mm e centralizado). A contagem de páginas no painel lateral é adaptada de forma dinâmica.
+15. **Campo Motorista no Corpo do Ticket**:
+    *   *Problema*: A informação do motorista, embora já constasse na tabela de digitação e na linha de assinatura, não era exibida diretamente no corpo do ticket.
+    *   *Solução*: Inserida a linha do motorista no corpo do ticket, logo abaixo de "Placa".
+16. **Importação em Lote via Planilha com Mapeamento Inteligente**:
+    *   *Problema*: Operadores com lotes massivos de tickets (como 500 registros) perdiam muito tempo digitando linha por linha na tabela do sistema.
+    *   *Solução*: Integrada a biblioteca SheetJS (XLSX) e implementado um processador de planilhas Excel/CSV com mapeamento tolerante a variações ortográficas e normalização de datas/horas. O sistema lê as colunas, calcula os pesos/volumes automaticamente e injeta os registros de uma só vez no lote de edição.
+17. **Otimização de Performance DOM (Lotes Grandes)**:
+    *   *Problema*: Ao editar dados com centenas de tickets ativos, a re-renderização completa do preview e da página de impressão no evento `oninput` (a cada tecla pressionada) causava lentidão e travamentos na digitação.
+    *   *Solução*: Refatorada a função de atualização de valores para modificar especificamente o elemento do ticket correspondente no DOM (via seletor `data-id`), resultando em digitação 100% fluida e instantânea.
 
 ---
 

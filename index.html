@@ -93,28 +93,21 @@
                     <input type="text" id="cfg-default-user" value="RISONEIDE FERREIRA">
                 </div>
 
+                <div class="settings-group">
+                    <label for="cfg-print-layout">Layout de Impressão</label>
+                    <select id="cfg-print-layout" class="settings-select">
+                        <option value="2x2">Layout 1 (4 tickets por folha)</option>
+                        <option value="1x2">Layout 2 (2 tickets por folha)</option>
+                    </select>
+                </div>
+
                 <div class="settings-group checkbox-group">
                     <input type="checkbox" id="cfg-auto-increment" checked>
                     <label for="cfg-auto-increment">Auto-incrementar Nota</label>
                 </div>
             </div>
 
-            <!-- Estatísticas e Resumo -->
-            <div class="sidebar-section stats-card">
-                <h3 class="section-title"><i class="fa-solid fa-chart-pie"></i> Resumo do Lote</h3>
-                <div class="stat-row">
-                    <span class="stat-label">Total de Tickets:</span>
-                    <span id="stat-total-tickets" class="stat-value">0</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Páginas A4 necessárias:</span>
-                    <span id="stat-total-pages" class="stat-value">0</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Peso Líquido Total:</span>
-                    <span id="stat-total-weight" class="stat-value">0 kg</span>
-                </div>
-            </div>
+
 
             <!-- Rodapé da Sidebar -->
             <div class="sidebar-footer">
@@ -147,6 +140,8 @@
                             <button id="btn-export"><i class="fa-solid fa-file-export"></i> Exportar Backup (JSON)</button>
                             <button id="btn-import-trigger"><i class="fa-solid fa-file-import"></i> Importar Backup (JSON)</button>
                             <input type="file" id="btn-import" accept=".json" style="display: none;">
+                            <button id="btn-import-sheet-trigger"><i class="fa-solid fa-file-excel"></i> Importar de Planilha (Excel/CSV)</button>
+                            <input type="file" id="btn-import-sheet" accept=".xlsx, .xls, .csv" style="display: none;">
                         </div>
                     </div>
                     <button id="btn-print" class="btn btn-primary" title="Imprimir tickets em lote ou Salvar como PDF">
@@ -207,7 +202,7 @@
                 <!-- Seção 2: Pré-visualização Real-Time -->
                 <div class="card preview-card">
                     <div class="card-header">
-                        <h3 class="card-title"><i class="fa-solid fa-eye"></i> Pré-visualização da Folha A4 (2x2)</h3>
+                        <h3 class="card-title"><i class="fa-solid fa-eye"></i> Pré-visualização da Folha A4 <span id="preview-layout-badge">(2x2)</span></h3>
                         <span class="preview-badge">Visualização em Escala</span>
                     </div>
                     <div class="preview-explanation">
@@ -239,6 +234,7 @@
     <datalist id="dl-complemento"></datalist>
     <datalist id="dl-pedido"></datalist>
 
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="users.js"></script>
     <script src="app.js"></script>
 </body>

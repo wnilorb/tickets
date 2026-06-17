@@ -143,7 +143,8 @@ body {
     color: var(--text-secondary);
 }
 
-.settings-group input[type="text"] {
+.settings-group input[type="text"],
+.settings-group select {
     background-color: var(--bg-primary);
     border: 1px solid var(--bg-tertiary);
     border-radius: var(--border-radius-sm);
@@ -154,7 +155,8 @@ body {
     transition: var(--transition-fast);
 }
 
-.settings-group input[type="text"]:focus {
+.settings-group input[type="text"]:focus,
+.settings-group select:focus {
     border-color: var(--accent-blue);
     outline: none;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
@@ -375,7 +377,7 @@ body {
     background-color: var(--bg-tertiary);
 }
 
-.dropdown:hover .dropdown-content {
+.dropdown-content.show {
     display: block;
 }
 
@@ -654,6 +656,16 @@ input[type="time"].table-input {
     position: relative;
     user-select: none;
     transform-origin: top center;
+}
+
+/* Layout 1x2 - 2 tickets por folha */
+.a4-page-preview.layout-1x2 {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+.a4-page-preview.layout-1x2 .ticket-wrapper {
+    width: 50%;
+    justify-self: center;
 }
 
 /* LINHAS DE CORTE PONTILHADAS NA TELA (APENAS HORIZONTAL) */
@@ -1001,6 +1013,16 @@ input[type="time"].table-input {
         position: relative !important;
         border-top: 1.5px dashed #000000 !important; /* Linha de corte tracejada no topo */
         border-bottom: 1.5px dashed #000000 !important; /* Linha de corte tracejada na base */
+    }
+
+    .a4-page.layout-1x2 {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: 1fr 1fr !important;
+    }
+
+    .a4-page.layout-1x2 .ticket-wrapper {
+        width: 105mm !important;
+        justify-self: center !important;
     }
 
     /* Evitar quebra na última página */
