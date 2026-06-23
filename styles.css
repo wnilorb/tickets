@@ -1100,3 +1100,304 @@ input[type="time"].table-input {
     size: A4 portrait;
     margin: 0;
 }
+
+/* ==========================================================================
+   CLASSES PARA OCULTAÇÃO DINÂMICA DE COLUNAS/CAMPOS (TABELA & IMPRESSÃO)
+   ========================================================================== */
+body.hide-field-nota .col-nota,
+body.hide-field-nota .ticket-header-title { display: none !important; }
+
+body.hide-field-date .col-date,
+body.hide-field-date .ticket-date-time-row .date-val,
+body.hide-field-date .ticket-date-time-row .date-separator { display: none !important; }
+
+body.hide-field-time .col-time,
+body.hide-field-time .ticket-date-time-row .time-val,
+body.hide-field-time .ticket-date-time-row .date-separator { display: none !important; }
+
+/* Se ambos date e time estiverem ocultos, esconde a linha inteira */
+body.hide-field-date.hide-field-time .ticket-date-time-row { display: none !important; }
+
+body.hide-field-pesoBruto .col-pesoBruto,
+body.hide-field-pesoBruto .ticket-peso-bruto-row { display: none !important; }
+
+body.hide-field-pesoTara .col-pesoTara,
+body.hide-field-pesoTara .ticket-peso-tara-row { display: none !important; }
+
+body.hide-field-liquido .col-liquido,
+body.hide-field-liquido .ticket-liquido-row .ticket-weight-liquid { display: none !important; }
+
+body.hide-field-toneladas .col-toneladas,
+body.hide-field-toneladas .ticket-liquido-row .ticket-weight-tons { display: none !important; }
+
+/* Se líquido E toneladas estiverem ocultos, esconde a linha de peso inteira */
+body.hide-field-liquido.hide-field-toneladas .ticket-liquido-row { display: none !important; }
+
+body.hide-field-volume .col-volume,
+body.hide-field-volume .ticket-volume-row { display: none !important; }
+
+body.hide-field-cliente .col-cliente,
+body.hide-field-cliente .ticket-cliente-row { display: none !important; }
+
+body.hide-field-material .col-material,
+body.hide-field-material .ticket-material-row { display: none !important; }
+
+body.hide-field-tipoVenda .col-tipoVenda,
+body.hide-field-tipoVenda .ticket-tipoVenda-row { display: none !important; }
+
+body.hide-field-transportador .col-transportador,
+body.hide-field-transportador .ticket-transportador-row { display: none !important; }
+
+body.hide-field-placa .col-placa,
+body.hide-field-placa .ticket-placa-row { display: none !important; }
+
+body.hide-field-motorista .col-motorista,
+body.hide-field-motorista .ticket-motorista-row { display: none !important; }
+
+body.hide-field-destino .col-destino,
+body.hide-field-destino .ticket-destino-row { display: none !important; }
+
+body.hide-field-distrito .col-distrito,
+body.hide-field-distrito .ticket-distrito-row { display: none !important; }
+
+body.hide-field-complemento .col-complemento,
+body.hide-field-complemento .ticket-complemento-row:not(.has-pedido) { display: none !important; }
+
+body.hide-field-pedido .col-pedido { display: none !important; }
+
+body.hide-field-usuario .col-usuario { display: none !important; }
+
+body.hide-field-assinaturaUsuario .signature-usuario-wrapper { display: none !important; }
+body.hide-field-assinaturaMotorista .signature-motorista-wrapper { display: none !important; }
+
+/* Ajuste de layout das assinaturas no rodapé */
+body.hide-field-assinaturaUsuario .signature-motorista-wrapper,
+body.hide-field-assinaturaMotorista .signature-usuario-wrapper {
+    width: 100% !important;
+}
+
+/* ==========================================================================
+   ESTILOS DO MODAL DE CONFIGURAÇÃO DE CAMPOS (GLASSMORPHISM PREMIUM)
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    transition: opacity var(--transition-normal);
+}
+
+.modal-card {
+    background: rgba(30, 41, 59, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg), 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    width: 90%;
+    max-width: 680px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--bg-tertiary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-primary);
+}
+
+.modal-header h3 i {
+    color: var(--accent-blue);
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+    border-radius: 50%;
+    transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.modal-close-btn:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+}
+
+.modal-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-description {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.modal-bulk-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: -10px;
+    margin-bottom: 20px;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--accent-blue);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    transition: var(--transition-fast);
+}
+
+.btn-link:hover {
+    color: var(--accent-blue-hover);
+    text-decoration: underline;
+}
+
+.modal-groups-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-group-section {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: var(--border-radius-md);
+    padding: 16px;
+}
+
+.modal-group-section h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 6px;
+}
+
+.switch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+/* INTERRUPTOR ESTILO SWITCH SLIDER */
+.switch-control {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-left: 48px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    user-select: none;
+}
+
+.switch-control input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.switch-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 22px;
+    width: 40px;
+    background-color: var(--bg-tertiary);
+    transition: .3s;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.switch-control input:checked + .switch-slider {
+    background-color: var(--accent-blue);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.switch-control input:checked + .switch-slider:before {
+    transform: translateX(18px);
+}
+
+.switch-label {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--bg-tertiary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+

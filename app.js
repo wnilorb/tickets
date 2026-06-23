@@ -3,6 +3,30 @@
    ========================================================================== */
 
 // CONSTANTES E CONFIGURAÇÕES PADRÃO
+const DEFAULT_VISIBLE_FIELDS = {
+    nota: true,
+    date: true,
+    time: true,
+    pesoBruto: true,
+    pesoTara: true,
+    liquido: true,
+    toneladas: true,
+    volume: true,
+    cliente: true,
+    material: true,
+    tipoVenda: true,
+    transportador: true,
+    placa: true,
+    motorista: true,
+    destino: true,
+    distrito: true,
+    complemento: true,
+    pedido: true,
+    usuario: true,
+    assinaturaUsuario: true,
+    assinaturaMotorista: true
+};
+
 const DEFAULT_CONFIG = {
     companyName: 'IZA CONSTRUCOES E COMERCIO LTDA-USINA',
     companyCnpj: '84.479.351',
@@ -10,11 +34,12 @@ const DEFAULT_CONFIG = {
     companyPhone: 'MANAUS - AM - Tel: (92)3238-3545',
     defaultUser: 'RISONEIDE FERREIRA',
     autoIncrement: true,
-    printLayout: '2x2'
+    printLayout: '2x2',
+    visibleFields: { ...DEFAULT_VISIBLE_FIELDS }
 };
 
 const COLUMN_MAPPING = {
-    nota: ['nota', 'nota entrega', 'num nota', 'numero nota', 'nº nota', 'documento', 'nfe'],
+    nota: ['nota', 'nota entrega', 'nota de entrega', 'num nota', 'numero nota', 'nº nota', 'n° nota', 'documento', 'nfe'],
     date: ['data', 'data saida', 'data de saida', 'data emissao', 'emissao', 'dia'],
     time: ['hora', 'hora saida', 'hora de saida', 'horario'],
     pesoBruto: ['peso bruto', 'bruto', 'peso bruto (kg)', 'peso_bruto', 'bruto (kg)', 'pesobruto'],
@@ -27,6 +52,7 @@ const COLUMN_MAPPING = {
     placa: ['placa', 'veiculo', 'placa veiculo'],
     motorista: ['motorista', 'nome motorista', 'condutor'],
     destino: ['destino', 'cidade', 'local entrega'],
+    distrito: ['distrito', 'bairro', 'regiao', 'localidade', 'subdistrito'],
     complemento: ['complemento', 'observacao', 'obs'],
     pedido: ['pedido', 'num pedido', 'numero pedido', 'nº pedido'],
     usuario: ['usuario', 'operador', 'emissor']
@@ -71,6 +97,11 @@ const DEFAULT_AUTOCOMPLETE_DB = {
         "MANAUS / AM TAPA BURACO",
         "MANAUS / AM - DISTRITO INDUSTRIAL"
     ],
+    distrito: [
+        "DISTRITO INDUSTRIAL",
+        "CENTRO",
+        "ZONA LESTE"
+    ],
     complemento: [
         "USINA ASFALTO PREFEITURA DE MANAUS NOVO ISRAEL",
         "USINA ASFALTO TAPA BURACO",
@@ -101,6 +132,7 @@ const SAMPLE_TICKETS = [
         placa: 'QZO6B23',
         motorista: 'JOSE DA SILVA',
         destino: 'MANAUS / AM PREFEITURA MUNICIPIO DE MANAUS - AM',
+        distrito: 'CENTRO',
         complemento: 'USINA ASFALTO PREFEITURA DE MANAUS DDC',
         pedido: '57',
         usuario: 'RISONEIDE FERREIRA'
@@ -120,6 +152,7 @@ const SAMPLE_TICKETS = [
         placa: 'JXY4H82',
         motorista: 'ANTONIO PEREIRA',
         destino: 'MANAUS / AM PREFEITURA MUNICIPIO DE MANAUS - AM',
+        distrito: 'CENTRO',
         complemento: 'USINA ASFALTO PREFEITURA DE MANAUS DDC',
         pedido: '58',
         usuario: 'RISONEIDE FERREIRA'
@@ -139,6 +172,7 @@ const SAMPLE_TICKETS = [
         placa: 'PHO8A12',
         motorista: 'MARCOS DOS SANTOS',
         destino: 'MANAUS / AM - DISTRITO INDUSTRIAL',
+        distrito: 'DISTRITO INDUSTRIAL',
         complemento: 'OBRA RUA NOVE',
         pedido: '122',
         usuario: 'RISONEIDE FERREIRA'
@@ -158,6 +192,7 @@ const SAMPLE_TICKETS = [
         placa: 'NOY5C44',
         motorista: 'CARLOS OLIVEIRA',
         destino: 'MANAUS / AM PREFEITURA MUNICIPIO DE MANAUS - AM',
+        distrito: 'ZONA LESTE',
         complemento: 'USINA ASFALTO PREFEITURA DE MANAUS DDC',
         pedido: '59',
         usuario: 'RISONEIDE FERREIRA'
@@ -201,7 +236,14 @@ const dom = {
     previewContainer: document.getElementById('preview-pages-container'),
     printArea: document.getElementById('print-area'),
     dropdownToggle: document.querySelector('.dropdown-toggle'),
-    dropdownContent: document.querySelector('.dropdown-content')
+    dropdownContent: document.querySelector('.dropdown-content'),
+    btnFieldsConfig: document.getElementById('btn-fields-config'),
+    fieldsModal: document.getElementById('fields-modal'),
+    modalBtnClose: document.getElementById('modal-btn-close'),
+    modalBtnSave: document.getElementById('modal-btn-save'),
+    modalBtnRestore: document.getElementById('modal-btn-restore'),
+    modalBtnSelectAll: document.getElementById('modal-btn-select-all'),
+    modalBtnDeselectAll: document.getElementById('modal-btn-deselect-all')
 };
 
 // FORMATADORES AUXILIARES
@@ -254,7 +296,20 @@ function init() {
     const savedConfig = localStorage.getItem('ticket_config');
     if (savedConfig) {
         state.config = JSON.parse(savedConfig);
+        // Garantir que todos os campos de visibleFields existam (evita problemas com backups antigos)
+        state.config.visibleFields = {
+            ...DEFAULT_VISIBLE_FIELDS,
+            ...(state.config.visibleFields || {})
+        };
+    } else {
+        state.config = {
+            ...DEFAULT_CONFIG,
+            visibleFields: { ...DEFAULT_VISIBLE_FIELDS }
+        };
     }
+    
+    // Aplicar a visibilidade de campos baseada na config
+    applyFieldVisibility();
     
     // Carregar tickets do localStorage se existirem
     const savedTickets = localStorage.getItem('ticket_list');
@@ -342,6 +397,40 @@ function setupGlobalListeners() {
     dom.btnAddTicket.addEventListener('click', () => addNewTicket());
     dom.btnFirstTicket.addEventListener('click', () => addNewTicket());
     
+    // Eventos do Modal de Configuração de Campos
+    if (dom.btnFieldsConfig) {
+        dom.btnFieldsConfig.addEventListener('click', openFieldsModal);
+    }
+    if (dom.modalBtnClose) {
+        dom.modalBtnClose.addEventListener('click', closeFieldsModal);
+    }
+    if (dom.modalBtnSave) {
+        dom.modalBtnSave.addEventListener('click', saveFieldsConfig);
+    }
+    if (dom.modalBtnRestore) {
+        dom.modalBtnRestore.addEventListener('click', restoreFieldsDefaults);
+    }
+    if (dom.modalBtnSelectAll) {
+        dom.modalBtnSelectAll.addEventListener('click', selectAllFields);
+    }
+    if (dom.modalBtnDeselectAll) {
+        dom.modalBtnDeselectAll.addEventListener('click', deselectAllFields);
+    }
+    if (dom.fieldsModal) {
+        dom.fieldsModal.addEventListener('click', (e) => {
+            if (e.target === dom.fieldsModal) {
+                closeFieldsModal();
+            }
+        });
+    }
+    
+    // Atalho de teclado ESC para fechar o modal
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && dom.fieldsModal && !dom.fieldsModal.classList.contains('hidden')) {
+            closeFieldsModal();
+        }
+    });
+
     // Prevenir envio acidental de formulários (caso existam)
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
@@ -400,6 +489,7 @@ function addNewTicket(data = null) {
             placa: '',
             motorista: '',
             destino: '',
+            distrito: '',
             complemento: '',
             pedido: '',
             usuario: state.config.defaultUser
@@ -494,7 +584,10 @@ function duplicateTicket(id) {
 
 // LIMPAR TODOS OS TICKETS
 function clearAllTickets() {
-    if (state.tickets.length === 0) return;
+    if (state.tickets.length === 0) {
+        alert('Não há tickets no lote para limpar.');
+        return;
+    }
     
     if (confirm('Tem certeza que deseja excluir TODOS os tickets deste lote? Esta ação não pode ser desfeita.')) {
         state.tickets = [];
@@ -644,6 +737,7 @@ function mapRowToTicket(row) {
         placa: '',
         motorista: '',
         destino: '',
+        distrito: '',
         complemento: '',
         pedido: '',
         usuario: state.config.defaultUser || ''
@@ -863,58 +957,61 @@ function renderTable() {
                         </button>
                     </div>
                 </td>
-                <td>
+                <td class="col-nota">
                     <input type="number" class="table-input" value="${t.nota}" oninput="updateTicketValue('${t.id}', 'nota', this.value)">
                 </td>
-                <td>
+                <td class="col-date">
                     <input type="date" class="table-input" value="${t.date}" oninput="updateTicketValue('${t.id}', 'date', this.value)">
                 </td>
-                <td>
+                <td class="col-time">
                     <input type="time" class="table-input" value="${t.time}" oninput="updateTicketValue('${t.id}', 'time', this.value)">
                 </td>
-                <td>
+                <td class="col-pesoBruto">
                     <input type="number" class="table-input" value="${t.pesoBruto}" placeholder="0" oninput="updateTicketValue('${t.id}', 'pesoBruto', this.value)">
                 </td>
-                <td>
+                <td class="col-pesoTara">
                     <input type="number" class="table-input" value="${t.pesoTara}" placeholder="0" oninput="updateTicketValue('${t.id}', 'pesoTara', this.value)">
                 </td>
-                <td>
+                <td class="col-liquido">
                     <input type="text" class="table-input table-input-readonly col-liquido" value="${formatWeightKG(liquido)}" readonly tabindex="-1">
                 </td>
-                <td>
+                <td class="col-toneladas">
                     <input type="text" class="table-input table-input-readonly col-toneladas" value="${formatTons(toneladas)}" readonly tabindex="-1">
                 </td>
-                <td>
+                <td class="col-volume">
                     <input type="text" class="table-input table-input-readonly col-volume" value="${t.volume !== '' ? formatVolume(t.volume) : ''}" readonly tabindex="-1">
                 </td>
-                <td>
+                <td class="col-cliente">
                     <input type="text" class="table-input" list="dl-cliente" value="${t.cliente}" placeholder="Cliente" oninput="updateTicketValue('${t.id}', 'cliente', this.value)" onblur="learnAutocompleteValue('cliente', this.value)">
                 </td>
-                <td>
+                <td class="col-material">
                     <input type="text" class="table-input" list="dl-material" value="${t.material}" placeholder="Material" oninput="updateTicketValue('${t.id}', 'material', this.value)" onblur="learnAutocompleteValue('material', this.value)">
                 </td>
-                <td>
+                <td class="col-tipoVenda">
                     <input type="text" class="table-input" list="dl-tipoVenda" value="${t.tipoVenda}" placeholder="Tipo de Venda" oninput="updateTicketValue('${t.id}', 'tipoVenda', this.value)" onblur="learnAutocompleteValue('tipoVenda', this.value)">
                 </td>
-                <td>
+                <td class="col-transportador">
                     <input type="text" class="table-input" list="dl-transportador" value="${t.transportador}" placeholder="Transportador" oninput="updateTicketValue('${t.id}', 'transportador', this.value)" onblur="learnAutocompleteValue('transportador', this.value)">
                 </td>
-                <td>
+                <td class="col-placa">
                     <input type="text" class="table-input" list="dl-placa" value="${t.placa}" placeholder="Placa" oninput="updateTicketValue('${t.id}', 'placa', this.value)" onblur="learnAutocompleteValue('placa', this.value)">
                 </td>
-                <td>
+                <td class="col-motorista">
                     <input type="text" class="table-input" list="dl-motorista" value="${t.motorista || ''}" placeholder="Motorista" oninput="updateTicketValue('${t.id}', 'motorista', this.value)" onblur="learnAutocompleteValue('motorista', this.value)">
                 </td>
-                <td>
+                <td class="col-destino">
                     <input type="text" class="table-input" list="dl-destino" value="${t.destino}" placeholder="Destino" oninput="updateTicketValue('${t.id}', 'destino', this.value)" onblur="learnAutocompleteValue('destino', this.value)">
                 </td>
-                <td>
+                <td class="col-distrito">
+                    <input type="text" class="table-input" list="dl-distrito" value="${t.distrito || ''}" placeholder="Distrito" oninput="updateTicketValue('${t.id}', 'distrito', this.value)" onblur="learnAutocompleteValue('distrito', this.value)">
+                </td>
+                <td class="col-complemento">
                     <input type="text" class="table-input" list="dl-complemento" value="${t.complemento}" placeholder="Complemento" oninput="updateTicketValue('${t.id}', 'complemento', this.value)" onblur="learnAutocompleteValue('complemento', this.value)">
                 </td>
-                <td>
+                <td class="col-pedido">
                     <input type="text" class="table-input" list="dl-pedido" value="${t.pedido || ''}" placeholder="Pedido" oninput="updateTicketValue('${t.id}', 'pedido', this.value)" onblur="learnAutocompleteValue('pedido', this.value)">
                 </td>
-                <td>
+                <td class="col-usuario">
                     <input type="text" class="table-input" value="${t.usuario}" placeholder="Usuário" oninput="updateTicketValue('${t.id}', 'usuario', this.value)">
                 </td>
             </tr>
@@ -955,11 +1052,34 @@ function generateTicketHTML(ticket) {
     const pt = parseInt(ticket.pesoTara) || 0;
     const liq = Math.max(0, pb - pt);
     const ton = liq / 1000;
+    const visibleFields = state.config.visibleFields || DEFAULT_VISIBLE_FIELDS;
     
-    // Formatar data/hora no ticket
-    const dateFormatted = formatDateBR(ticket.date);
-    const dateTimeStr = dateFormatted && ticket.time ? `${dateFormatted} - ${ticket.time}` : `${dateFormatted} ${ticket.time}`;
+    // Lógica dinâmica de exibição de Data e Hora
+    const dateFormatted = visibleFields.date ? formatDateBR(ticket.date) : '';
+    const timeFormatted = visibleFields.time ? ticket.time : '';
+    let dateTimeStr = '';
     
+    if (dateFormatted && timeFormatted) {
+        dateTimeStr = `<span class="date-val">${dateFormatted}</span><span class="date-separator"> - </span><span class="time-val">${timeFormatted}</span>`;
+    } else if (dateFormatted) {
+        dateTimeStr = `<span class="date-val">${dateFormatted}</span>`;
+    } else if (timeFormatted) {
+        dateTimeStr = `<span class="time-val">${timeFormatted}</span>`;
+    }
+
+    // Complemento & Pedido
+    let complementoHtml = '';
+    const showComplemento = visibleFields.complemento;
+    const showPedido = visibleFields.pedido;
+    if (showComplemento && ticket.complemento) {
+        complementoHtml += escapeHTML(ticket.complemento);
+    }
+    if (showPedido && ticket.pedido) {
+        if (complementoHtml) complementoHtml += '\n';
+        complementoHtml += `Pedido: ${escapeHTML(ticket.pedido)}`;
+    }
+    const hasComplementoOrPedidoClass = (showComplemento && ticket.complemento) || (showPedido && ticket.pedido) ? 'has-pedido' : '';
+
     return `
         <div class="ticket-wrapper" data-id="${ticket.id || ''}">
             <div class="ticket-header">
@@ -976,23 +1096,23 @@ function generateTicketHTML(ticket) {
             </div>
             
             <div class="ticket-body">
-                <div class="ticket-row">
+                <div class="ticket-row ticket-date-time-row">
                     <span class="ticket-label">Data da Saída</span>
                     <span class="ticket-colon">:</span>
                     <span class="ticket-value">${dateTimeStr}</span>
                 </div>
-                <div class="ticket-row">
+                <div class="ticket-row ticket-peso-bruto-row">
                     <span class="ticket-label">Peso Bruto (KG)</span>
                     <span class="ticket-colon">:</span>
                     <span class="ticket-value">${ticket.pesoBruto !== '' ? formatWeightKG(ticket.pesoBruto) : ''}</span>
                 </div>
-                <div class="ticket-row">
+                <div class="ticket-row ticket-peso-tara-row">
                     <span class="ticket-label">Peso Tara (KG)</span>
                     <span class="ticket-colon">:</span>
                     <span class="ticket-value">${ticket.pesoTara !== '' ? formatWeightKG(ticket.pesoTara) : ''}</span>
                 </div>
                 
-                <div class="ticket-row ticket-row-weight">
+                <div class="ticket-row ticket-row-weight ticket-liquido-row">
                     <span class="ticket-label">Líquido (KG)</span>
                     <span class="ticket-colon">:</span>
                     <div class="ticket-weight-value-container">
@@ -1001,59 +1121,64 @@ function generateTicketHTML(ticket) {
                     </div>
                 </div>
                 
-                <div class="ticket-row">
+                <div class="ticket-row ticket-volume-row">
                     <span class="ticket-label">Volume (M3)</span>
                     <span class="ticket-colon">:</span>
                     <span class="ticket-value">${ticket.volume !== '' ? formatVolume(ticket.volume) : ''}</span>
                 </div>
-                <div class="ticket-row">
+                <div class="ticket-row ticket-cliente-row">
                     <span class="ticket-label">Cliente</span>
                     <span class="ticket-colon">:</span>
                     <span class="ticket-value">${ticket.cliente || ''}</span>
                 </div>
-                <div class="ticket-row">
+                <div class="ticket-row ticket-material-row">
                     <span class="ticket-label">Material</span>
                     <span class="ticket-colon">:</span>
                     <span class="ticket-value">${ticket.material || ''}</span>
                 </div>
-                <div class="ticket-row">
+                <div class="ticket-row ticket-tipoVenda-row">
                     <span class="ticket-label">Tipo de Venda</span>
                     <span class="ticket-colon">:</span>
                     <span class="ticket-value">${ticket.tipoVenda || ''}</span>
                 </div>
-                <div class="ticket-row">
+                <div class="ticket-row ticket-transportador-row">
                     <span class="ticket-label">Transportador</span>
                     <span class="ticket-colon">:</span>
                     <span class="ticket-value">${ticket.transportador || ''}</span>
                 </div>
-                <div class="ticket-row">
+                <div class="ticket-row ticket-placa-row">
                     <span class="ticket-label">Placa</span>
                     <span class="ticket-colon">:</span>
                     <span class="ticket-value">${ticket.placa || ''}</span>
                 </div>
-                <div class="ticket-row">
+                <div class="ticket-row ticket-motorista-row">
                     <span class="ticket-label">Motorista</span>
                     <span class="ticket-colon">:</span>
                     <span class="ticket-value">${ticket.motorista || ''}</span>
                 </div>
-                <div class="ticket-row">
+                <div class="ticket-row ticket-destino-row">
                     <span class="ticket-label">Destino</span>
                     <span class="ticket-colon">:</span>
                     <span class="ticket-value">${ticket.destino || ''}</span>
                 </div>
-                <div class="ticket-row">
+                <div class="ticket-row ticket-distrito-row">
+                    <span class="ticket-label">Distrito</span>
+                    <span class="ticket-colon">:</span>
+                    <span class="ticket-value">${ticket.distrito || ''}</span>
+                </div>
+                <div class="ticket-row ticket-complemento-row ${hasComplementoOrPedidoClass}">
                     <span class="ticket-label">Complemento</span>
                     <span class="ticket-colon">:</span>
-                    <span class="ticket-value">${ticket.complemento || ''}${ticket.pedido ? '\nPedido: ' + ticket.pedido : ''}</span>
+                    <span class="ticket-value">${complementoHtml}</span>
                 </div>
             </div>
             
             <div class="ticket-footer">
-                <div class="signature-line-wrapper">
+                <div class="signature-line-wrapper signature-usuario-wrapper">
                     <div class="signature-line"></div>
                     <div class="signature-name">${ticket.usuario || state.config.defaultUser}</div>
                 </div>
-                <div class="signature-line-wrapper">
+                <div class="signature-line-wrapper signature-motorista-wrapper">
                     <div class="signature-line"></div>
                     <div class="signature-name">${ticket.motorista || 'MOTORISTA'}</div>
                 </div>
@@ -1258,7 +1383,7 @@ function updateAutocompleteDatabase() {
     const saved = localStorage.getItem('ticket_autocomplete_db');
     let db = saved ? JSON.parse(saved) : { ...DEFAULT_AUTOCOMPLETE_DB };
 
-    const fields = ['cliente', 'material', 'tipoVenda', 'transportador', 'placa', 'motorista', 'destino', 'complemento', 'pedido'];
+    const fields = ['cliente', 'material', 'tipoVenda', 'transportador', 'placa', 'motorista', 'destino', 'distrito', 'complemento', 'pedido'];
     fields.forEach(f => {
         if (!db[f]) db[f] = [];
     });
@@ -1290,7 +1415,7 @@ function learnAutocompleteValue(field, value) {
     const val = (value || '').trim();
     if (!val) return;
     
-    const autocompleteFields = ['cliente', 'material', 'tipoVenda', 'transportador', 'placa', 'motorista', 'destino', 'complemento', 'pedido'];
+    const autocompleteFields = ['cliente', 'material', 'tipoVenda', 'transportador', 'placa', 'motorista', 'destino', 'distrito', 'complemento', 'pedido'];
     if (!autocompleteFields.includes(field)) return;
     
     const saved = localStorage.getItem('ticket_autocomplete_db');
@@ -1313,13 +1438,100 @@ function learnAutocompleteValue(field, value) {
 
 // RENDERIZAR OPÇÕES NAS DATALISTS
 function renderDatalists(db) {
-    const fields = ['cliente', 'material', 'tipoVenda', 'transportador', 'placa', 'motorista', 'destino', 'complemento', 'pedido'];
+    const fields = ['cliente', 'material', 'tipoVenda', 'transportador', 'placa', 'motorista', 'destino', 'distrito', 'complemento', 'pedido'];
     fields.forEach(field => {
         const dl = document.getElementById(`dl-${field}`);
         if (dl) {
             // Ordenar alfabeticamente para melhor experiência do usuário
             const sortedVals = [...db[field]].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
             dl.innerHTML = sortedVals.map(val => `<option value="${escapeHTML(val)}"></option>`).join('');
+        }
+    });
+}
+
+// APLICAR CLASSES DE VISIBILIDADE AO BODY
+function applyFieldVisibility() {
+    const visibleFields = state.config.visibleFields || DEFAULT_VISIBLE_FIELDS;
+    Object.keys(visibleFields).forEach(field => {
+        const isVisible = visibleFields[field];
+        if (isVisible) {
+            document.body.classList.remove(`hide-field-${field}`);
+        } else {
+            document.body.classList.add(`hide-field-${field}`);
+        }
+    });
+}
+
+// CONTROLE DO MODAL DE CONFIGURAÇÃO DE CAMPOS
+function openFieldsModal() {
+    if (!dom.fieldsModal) return;
+    
+    // Atualizar os checkboxes do modal com o estado atual
+    const visibleFields = state.config.visibleFields || DEFAULT_VISIBLE_FIELDS;
+    Object.keys(visibleFields).forEach(field => {
+        const checkbox = document.getElementById(`switch-${field}`);
+        if (checkbox) {
+            checkbox.checked = visibleFields[field];
+        }
+    });
+    
+    dom.fieldsModal.classList.remove('hidden');
+}
+
+function closeFieldsModal() {
+    if (dom.fieldsModal) {
+        dom.fieldsModal.classList.add('hidden');
+    }
+}
+
+function saveFieldsConfig() {
+    if (!state.config.visibleFields) {
+        state.config.visibleFields = {};
+    }
+    
+    const fields = Object.keys(DEFAULT_VISIBLE_FIELDS);
+    fields.forEach(field => {
+        const checkbox = document.getElementById(`switch-${field}`);
+        if (checkbox) {
+            state.config.visibleFields[field] = checkbox.checked;
+        }
+    });
+    
+    saveConfig();
+    applyFieldVisibility();
+    renderPreviewAndPrint();
+    closeFieldsModal();
+}
+
+function restoreFieldsDefaults() {
+    if (confirm('Deseja restaurar a exibição de todos os campos para o padrão?')) {
+        const fields = Object.keys(DEFAULT_VISIBLE_FIELDS);
+        fields.forEach(field => {
+            const checkbox = document.getElementById(`switch-${field}`);
+            if (checkbox) {
+                checkbox.checked = true;
+            }
+        });
+        saveFieldsConfig(); // Salvar e aplicar imediatamente!
+    }
+}
+
+function selectAllFields() {
+    const fields = Object.keys(DEFAULT_VISIBLE_FIELDS);
+    fields.forEach(field => {
+        const checkbox = document.getElementById(`switch-${field}`);
+        if (checkbox) {
+            checkbox.checked = true;
+        }
+    });
+}
+
+function deselectAllFields() {
+    const fields = Object.keys(DEFAULT_VISIBLE_FIELDS);
+    fields.forEach(field => {
+        const checkbox = document.getElementById(`switch-${field}`);
+        if (checkbox) {
+            checkbox.checked = false;
         }
     });
 }
