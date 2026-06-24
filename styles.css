@@ -1,0 +1,1403 @@
+/* ==========================================================================
+   SISTEMA DE ESTILOS - TICKET BATCH PRINTING
+   ========================================================================== */
+
+/* VARIÁVEIS DE DESIGN SYSTEM (TEMA ESCURO/AZUL PREMIUM) */
+:root {
+    --bg-primary: #0f172a;        /* Deep slate background */
+    --bg-secondary: #1e293b;      /* Slate card background */
+    --bg-tertiary: #334155;       /* Slate border/hover background */
+    
+    --accent-blue: #3b82f6;       /* Radiant blue accent */
+    --accent-blue-hover: #2563eb; /* Radiant blue hover */
+    --accent-green: #10b981;      /* Emerald success */
+    --accent-green-hover: #059669;/* Emerald success hover */
+    --accent-red: #ef4444;        /* Crimson danger */
+    --accent-red-hover: #dc2626;  /* Crimson danger hover */
+    
+    --text-primary: #f8fafc;     /* Ice white */
+    --text-secondary: #94a3b8;   /* Light slate text */
+    --text-muted: #64748b;       /* Muted gray */
+    
+    --font-ui: 'Inter', sans-serif;
+    --font-print: 'Arial', 'Helvetica', sans-serif;
+    
+    --border-radius-sm: 6px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 16px;
+    
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.25s ease;
+}
+
+/* RESET E CONFIGURAÇÕES BÁSICAS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-ui);
+    overflow-x: hidden;
+    height: 100vh;
+}
+
+/* CUSTOMIZAR SCROLLBARS */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-blue);
+}
+
+/* LAYOUT E ESTRUTURA PRINCIPAL */
+#app-container {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* BARRA LATERAL (SIDEBAR) */
+.sidebar {
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--bg-tertiary);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--bg-tertiary);
+}
+
+.brand-icon {
+    font-size: 28px;
+    color: var(--accent-blue);
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+}
+
+.brand-text h1 {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text-primary);
+}
+
+.brand-text span {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.sidebar-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.section-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.settings-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.settings-group label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.settings-group input[type="text"],
+.settings-group select {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--bg-tertiary);
+    border-radius: var(--border-radius-sm);
+    color: var(--text-primary);
+    padding: 8px 12px;
+    font-family: var(--font-ui);
+    font-size: 13px;
+    transition: var(--transition-fast);
+}
+
+.settings-group input[type="text"]:focus,
+.settings-group select:focus {
+    border-color: var(--accent-blue);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.checkbox-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin-top: 6px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    accent-color: var(--accent-blue);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.checkbox-group label {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* ESTATÍSTICAS */
+.stats-card {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--bg-tertiary);
+    border-radius: var(--border-radius-md);
+    padding: 16px;
+    margin-top: auto;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+}
+
+.stat-value {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+#stat-total-weight {
+    color: var(--accent-blue);
+}
+
+.sidebar-footer {
+    text-align: center;
+    border-top: 1px solid var(--bg-tertiary);
+    padding-top: 16px;
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.sidebar-footer .version {
+    display: block;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+/* ÁREA DE CONTEÚDO PRINCIPAL */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: hidden;
+}
+
+/* TOPBAR */
+.topbar {
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--bg-tertiary);
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+    z-index: 10;
+}
+
+.topbar-title h2 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.topbar-title p {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.actions-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* BOTÕES ESTILIZADOS */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    padding: 10px 16px;
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast) transform;
+}
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+.btn-primary {
+    background-color: var(--accent-blue);
+    color: var(--text-primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-blue-hover);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+}
+
+.btn-secondary {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.btn-secondary:hover {
+    background-color: #475569;
+}
+
+.btn-success {
+    background-color: var(--accent-green);
+    color: var(--text-primary);
+}
+
+.btn-success:hover {
+    background-color: var(--accent-green-hover);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-danger {
+    background-color: var(--accent-red);
+    color: var(--text-primary);
+}
+
+.btn-danger:hover {
+    background-color: var(--accent-red-hover);
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+/* DROPDOWN DE DADOS */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    background-color: var(--bg-secondary);
+    min-width: 200px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--bg-tertiary);
+    border-radius: var(--border-radius-md);
+    z-index: 100;
+    overflow: hidden;
+}
+
+.dropdown-content button {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    padding: 12px 16px;
+    text-align: left;
+    width: 100%;
+    font-family: var(--font-ui);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: var(--transition-fast);
+}
+
+.dropdown-content button:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
+/* GRID DE TRABALHO (Tabela + Preview) */
+.workspace-grid {
+    display: grid;
+    grid-template-rows: 55% 45%; /* Split workspace horizontally */
+    height: calc(100vh - 65px);
+    overflow: hidden;
+}
+
+@media (min-width: 1200px) {
+    .workspace-grid {
+        grid-template-rows: 1fr;
+        grid-template-columns: 60% 40%; /* Split vertically on big screens */
+    }
+}
+
+/* CARDS E CONTÊINERES */
+.card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--bg-tertiary);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.table-card {
+    border-top: none;
+    border-left: none;
+}
+
+.preview-card {
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    background-color: var(--bg-primary); /* Dark grey contrast behind physical A4 pages */
+}
+
+.card-header {
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--bg-tertiary);
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-title {
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+}
+
+.card-title i {
+    color: var(--accent-blue);
+}
+
+/* TABELA DE DADOS INTERATIVA */
+.table-container {
+    flex: 1;
+    overflow: auto;
+    position: relative;
+}
+
+table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    text-align: left;
+    table-layout: fixed;
+}
+
+th {
+    background-color: var(--bg-primary);
+    color: var(--text-secondary);
+    font-weight: 600;
+    padding: 14px 10px;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    border-bottom: 1px solid var(--bg-tertiary);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+}
+
+tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: var(--transition-fast);
+}
+
+tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+td {
+    padding: 10px 6px;
+    vertical-align: middle;
+}
+
+/* INPUTS DE TABELA AMPLOS E CONFORTÁVEIS */
+.table-input {
+    background-color: rgba(15, 23, 42, 0.5); /* Fundo escuro sutil */
+    border: 1px solid rgba(255, 255, 255, 0.08); /* Borda sutil visível */
+    border-radius: var(--border-radius-sm);
+    color: var(--text-primary);
+    padding: 10px 12px; /* Maior espaçamento interno */
+    font-family: var(--font-ui);
+    font-size: 13.5px; /* Fonte maior para fácil leitura */
+    width: 100%;
+    height: 40px; /* Altura confortável para digitação */
+    transition: var(--transition-fast);
+}
+
+.table-input:hover {
+    border-color: var(--accent-blue);
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.table-input:focus {
+    background-color: var(--bg-primary);
+    border-color: var(--accent-blue);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25); /* Glow de foco nítido */
+}
+
+/* Readonly fields styling */
+.table-input-readonly {
+    background-color: rgba(15, 23, 42, 0.2);
+    color: #60a5fa; /* Azul claro nítido */
+    font-weight: 600;
+    cursor: not-allowed;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* Inputs numéricos */
+input[type="number"].table-input {
+    text-align: right;
+}
+
+/* Customização e visibilidade dos indicadores de data/hora */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1); /* Torna o ícone do calendário/relógio visível no fundo escuro */
+    cursor: pointer;
+    opacity: 0.7;
+    transition: var(--transition-fast);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+/* Reduzir padding para dar mais espaço ao ícone do calendário/relógio */
+input[type="date"].table-input {
+    padding-right: 6px;
+    padding-left: 8px;
+}
+
+input[type="time"].table-input {
+    padding-right: 6px;
+    padding-left: 8px;
+}
+
+/* Ações nas linhas */
+.row-actions {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+
+.btn-row {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    padding: 4px 6px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: var(--transition-fast);
+    font-size: 11px;
+}
+
+.btn-row:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+}
+
+.btn-row-delete:hover {
+    color: var(--text-primary);
+    background-color: var(--accent-red);
+}
+
+/* EMPTY STATE DA TABELA */
+.table-empty-state {
+    display: none; /* Controlado via JS */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 40px;
+    text-align: center;
+    color: var(--text-secondary);
+    flex: 1;
+}
+
+.table-empty-state i {
+    font-size: 40px;
+    color: var(--text-muted);
+}
+
+.table-empty-state p {
+    font-size: 13px;
+}
+
+/* PAINEL DE PRE-VISUALIZAÇÃO A4 */
+.preview-badge {
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    padding: 4px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.preview-explanation {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+    padding: 10px 20px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.preview-container-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+#preview-pages-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    align-items: center;
+    width: 100%;
+}
+
+/* REPRESENTAÇÃO FÍSICA DO PAPEL A4 EM MINIATURA (NA TELA) */
+.a4-page-preview {
+    background-color: #ffffff;
+    color: #000000;
+    width: 100%;
+    max-width: 595px; /* Sized to fit screen nicely */
+    aspect-ratio: 1 / 1.4142; /* A4 aspect ratio */
+    box-shadow: var(--shadow-lg), 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    border: 1px solid #d1d5db;
+    border-top: 1px dashed rgba(0, 0, 0, 0.3);
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.3);
+    box-sizing: border-box;
+    position: relative;
+    user-select: none;
+    transform-origin: top center;
+}
+
+/* Layout 1x2 - 2 tickets por folha */
+.a4-page-preview.layout-1x2 {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+.a4-page-preview.layout-1x2 .ticket-wrapper {
+    width: 50%;
+    justify-self: center;
+}
+
+/* LINHAS DE CORTE PONTILHADAS NA TELA (APENAS HORIZONTAL) */
+.a4-page-preview::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    border-top: 1px dashed rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* TICKET INDIVIDUAL (DENTRO DA GRADE 2x2) */
+.ticket-wrapper {
+    padding: 10px 14px 14px 14px; /* Adicionado padding inferior para afastar a assinatura da linha de base */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    font-family: var(--font-print);
+    background-color: #ffffff;
+    color: #000000;
+    position: relative;
+    border-bottom: 1px solid #000000; /* Linha preta horizontal abaixo das assinaturas */
+}
+
+/* Ajustes finos de escala na tela para caber no preview */
+.a4-page-preview .ticket-wrapper {
+    font-size: 7.5px; /* Scaled down for screen display */
+    line-height: 1.15;
+}
+
+/* Cabeçalho do Ticket */
+.ticket-header {
+    margin-bottom: 2px;
+}
+
+.ticket-header-title {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 1.15em;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    padding: 2px 0;
+    margin-bottom: 2px;
+}
+
+.ticket-company-details {
+    font-size: 0.9em;
+    line-height: 1.1;
+    font-weight: normal;
+}
+
+.ticket-company-name {
+    font-weight: normal;
+    white-space: nowrap; /* Impede que o navegador quebre a linha no hífen (-) do CNPJ */
+}
+
+.ticket-header-separator {
+    height: 1px;
+    border-bottom: 1px solid #000;
+    margin-top: 2px;
+    margin-bottom: 4px;
+}
+
+/* Corpo do Ticket (Dados da Nota) */
+.ticket-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5px;
+}
+
+.ticket-row {
+    display: grid;
+    grid-template-columns: 115px 12px 1fr;
+    align-items: start;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.a4-page-preview .ticket-row {
+    grid-template-columns: 90px 8px 1fr; /* Smaller columns on preview */
+}
+
+.ticket-label {
+    font-weight: 500;
+    white-space: nowrap; /* Impede que rótulos como "Líquido (KG)" quebrem de linha */
+}
+
+.ticket-colon {
+    font-weight: 500;
+}
+
+.ticket-value {
+    font-weight: 500;
+}
+
+/* Estilo para Peso Líquido (Destaque Negrito) */
+.ticket-row-weight {
+    font-size: 1.15em;
+    font-weight: 700;
+    margin: 2px 0;
+}
+
+.ticket-weight-value-container {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    padding-right: 15px;
+}
+
+.ticket-weight-liquid {
+    font-weight: 700;
+}
+
+.ticket-weight-tons {
+    font-weight: 700;
+    margin-left: 20px;
+}
+
+/* Rodapé do Ticket (Assinaturas) */
+.ticket-footer {
+    margin-top: auto; /* Alinha no final do ticket naturalmente acima da borda */
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-top: 8px;
+    font-size: 0.9em;
+}
+
+.signature-line-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 48%;
+}
+
+.signature-line {
+    width: 100%;
+    border-bottom: 0.8px solid #000;
+    margin-bottom: 2px;
+}
+
+.signature-name {
+    font-size: 0.9em;
+    font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+/* Ocultar área de impressão nativa por padrão */
+.print-only {
+    display: none;
+}
+
+/* CLASSE AUXILIAR HIDE */
+.hidden {
+    display: none !important;
+}
+
+/* ESTILIZAÇÃO DA TELA DE LOGIN (TEMA GLASSMORPHISM) */
+#login-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.login-card {
+    background: rgba(30, 41, 59, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--border-radius-lg);
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.login-header {
+    margin-bottom: 28px;
+}
+
+.login-icon {
+    font-size: 44px;
+    color: var(--accent-blue);
+    filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.4));
+    margin-bottom: 16px;
+}
+
+.login-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+}
+
+.login-header p {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    line-height: 1.4;
+}
+
+.login-error-msg {
+    background-color: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 10px 12px;
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 20px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.login-footer {
+    margin-top: 30px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ANIMAÇÃO SHAKE PARA ERRO DE LOGIN */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-8px); }
+    40%, 80% { transform: translateX(8px); }
+}
+
+.shake {
+    animation: shake 0.4s ease;
+}
+
+/* BADGE DE USUÁRIO NA SIDEBAR */
+.sidebar-user-badge {
+    background-color: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-md);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background-color: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--accent-blue);
+    font-size: 16px;
+    filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.2));
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.user-info span {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-transform: capitalize;
+}
+
+.btn-logout-link {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-family: var(--font-ui);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    transition: var(--transition-fast);
+}
+
+.btn-logout-link:hover {
+    color: var(--accent-red);
+}
+
+/* ==========================================================================
+   REGRAS DE IMPRESSÃO (@media print) - ESPECÍFICO PARA A4 (2x2)
+   ========================================================================== */
+@media print {
+    /* Esconde a interface inteira do usuário */
+    .no-print, #app-container, .sidebar, .main-content, .topbar {
+        display: none !important;
+    }
+
+    body, html {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 210mm !important;
+        height: 297mm !important;
+    }
+
+    .print-only {
+        display: block !important;
+    }
+
+    /* Página Física A4 (Reduzido 1mm para evitar estouro de página por erro de arredondamento) */
+    .a4-page {
+        width: 210mm !important;
+        height: 296mm !important; 
+        page-break-after: always !important;
+        page-break-inside: avoid !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        grid-template-rows: 1fr 1fr !important;
+        box-sizing: border-box !important;
+        background-color: #ffffff !important;
+        position: relative !important;
+        border-top: 1.5px dashed #000000 !important; /* Linha de corte tracejada no topo */
+        border-bottom: 1.5px dashed #000000 !important; /* Linha de corte tracejada na base */
+    }
+
+    .a4-page.layout-1x2 {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: 1fr 1fr !important;
+    }
+
+    .a4-page.layout-1x2 .ticket-wrapper {
+        width: 105mm !important;
+        justify-self: center !important;
+    }
+
+    /* Evitar quebra na última página */
+    .a4-page:last-child {
+        page-break-after: avoid !important;
+    }
+
+    /* Linha de corte horizontal no meio (sem vertical) */
+    .a4-page::after {
+        content: '' !important;
+        position: absolute !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: 50% !important;
+        height: 1px !important;
+        border-top: 1.5px dashed #000000 !important;
+        pointer-events: none !important;
+        z-index: 10 !important;
+    }
+
+    /* Ajuste de escala do ticket de impressão para preenchimento físico perfeito */
+    .a4-page .ticket-wrapper {
+        font-size: 9.5pt !important; /* Reduz ligeiramente para evitar quebra de linhas desnecessárias */
+        line-height: 1.22 !important;
+        padding: 8mm 6mm 6mm 6mm !important; /* Margem interna: 8mm topo, 6mm laterais, 6mm inferior */
+        height: calc(100% - 4mm) !important; /* Altura reduzida para dar espaço à linha de corte */
+        margin-bottom: 4mm !important; /* Puxa a linha sólida 4mm para cima da linha tracejada de corte */
+        width: 100% !important;
+        box-sizing: border-box !important;
+        border-bottom: 1px solid #000000 !important; /* Linha sólida abaixo da assinatura na impressão */
+    }
+
+    /* Ajustes específicos do layout das linhas na impressão */
+    .a4-page .ticket-row {
+        grid-template-columns: 115px 12px 1fr !important;
+        gap: 0 !important;
+        margin-bottom: 1.5px !important;
+    }
+
+    .a4-page .ticket-header-title {
+        font-size: 12.5pt !important;
+        border-top: 1px solid #000 !important;
+        border-bottom: 1.5px solid #000 !important;
+        padding: 2px 0 !important;
+        margin-bottom: 3px !important;
+    }
+
+    .a4-page .ticket-company-details {
+        font-size: 9.5pt !important;
+    }
+
+    .a4-page .ticket-header-separator {
+        border-bottom: 1.5px solid #000 !important;
+        margin-top: 3px !important;
+        margin-bottom: 6px !important;
+    }
+
+    .a4-page .ticket-row-weight {
+        font-size: 12pt !important;
+        margin: 2px 0 !important;
+    }
+
+    .a4-page .ticket-footer {
+        margin-top: auto !important; /* Empurra para o final da área de impressão acima da linha */
+        padding-top: 0 !important;
+    }
+
+    .a4-page .signature-line {
+        border-bottom: 1px solid #000000 !important;
+    }
+}
+
+/* CONFIGURAÇÃO DA PÁGINA DE IMPRESSÃO DO BROWSER */
+@page {
+    size: A4 portrait;
+    margin: 0;
+}
+
+/* ==========================================================================
+   CLASSES PARA OCULTAÇÃO DINÂMICA DE COLUNAS/CAMPOS (TABELA & IMPRESSÃO)
+   ========================================================================== */
+body.hide-field-nota .col-nota,
+body.hide-field-nota .ticket-header-title { display: none !important; }
+
+body.hide-field-date .col-date,
+body.hide-field-date .ticket-date-time-row .date-val,
+body.hide-field-date .ticket-date-time-row .date-separator { display: none !important; }
+
+body.hide-field-time .col-time,
+body.hide-field-time .ticket-date-time-row .time-val,
+body.hide-field-time .ticket-date-time-row .date-separator { display: none !important; }
+
+/* Se ambos date e time estiverem ocultos, esconde a linha inteira */
+body.hide-field-date.hide-field-time .ticket-date-time-row { display: none !important; }
+
+body.hide-field-pesoBruto .col-pesoBruto,
+body.hide-field-pesoBruto .ticket-peso-bruto-row { display: none !important; }
+
+body.hide-field-pesoTara .col-pesoTara,
+body.hide-field-pesoTara .ticket-peso-tara-row { display: none !important; }
+
+body.hide-field-liquido .col-liquido,
+body.hide-field-liquido .ticket-liquido-row .ticket-weight-liquid { display: none !important; }
+
+body.hide-field-toneladas .col-toneladas,
+body.hide-field-toneladas .ticket-liquido-row .ticket-weight-tons { display: none !important; }
+
+/* Se líquido E toneladas estiverem ocultos, esconde a linha de peso inteira */
+body.hide-field-liquido.hide-field-toneladas .ticket-liquido-row { display: none !important; }
+
+body.hide-field-volume .col-volume,
+body.hide-field-volume .ticket-volume-row { display: none !important; }
+
+body.hide-field-cliente .col-cliente,
+body.hide-field-cliente .ticket-cliente-row { display: none !important; }
+
+body.hide-field-material .col-material,
+body.hide-field-material .ticket-material-row { display: none !important; }
+
+body.hide-field-tipoVenda .col-tipoVenda,
+body.hide-field-tipoVenda .ticket-tipoVenda-row { display: none !important; }
+
+body.hide-field-transportador .col-transportador,
+body.hide-field-transportador .ticket-transportador-row { display: none !important; }
+
+body.hide-field-placa .col-placa,
+body.hide-field-placa .ticket-placa-row { display: none !important; }
+
+body.hide-field-motorista .col-motorista,
+body.hide-field-motorista .ticket-motorista-row { display: none !important; }
+
+body.hide-field-destino .col-destino,
+body.hide-field-destino .ticket-destino-row { display: none !important; }
+
+body.hide-field-distrito .col-distrito,
+body.hide-field-distrito .ticket-distrito-row { display: none !important; }
+
+body.hide-field-complemento .col-complemento,
+body.hide-field-complemento .ticket-complemento-row:not(.has-pedido) { display: none !important; }
+
+body.hide-field-pedido .col-pedido { display: none !important; }
+
+body.hide-field-usuario .col-usuario { display: none !important; }
+
+body.hide-field-assinaturaUsuario .signature-usuario-wrapper { display: none !important; }
+body.hide-field-assinaturaMotorista .signature-motorista-wrapper { display: none !important; }
+
+/* Ajuste de layout das assinaturas no rodapé */
+body.hide-field-assinaturaUsuario .signature-motorista-wrapper,
+body.hide-field-assinaturaMotorista .signature-usuario-wrapper {
+    width: 100% !important;
+}
+
+/* ==========================================================================
+   ESTILOS DO MODAL DE CONFIGURAÇÃO DE CAMPOS (GLASSMORPHISM PREMIUM)
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    transition: opacity var(--transition-normal);
+}
+
+.modal-card {
+    background: rgba(30, 41, 59, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg), 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    width: 90%;
+    max-width: 680px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--bg-tertiary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-primary);
+}
+
+.modal-header h3 i {
+    color: var(--accent-blue);
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+    border-radius: 50%;
+    transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.modal-close-btn:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+}
+
+.modal-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-description {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.modal-bulk-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: -10px;
+    margin-bottom: 20px;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--accent-blue);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    transition: var(--transition-fast);
+}
+
+.btn-link:hover {
+    color: var(--accent-blue-hover);
+    text-decoration: underline;
+}
+
+.modal-groups-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-group-section {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: var(--border-radius-md);
+    padding: 16px;
+}
+
+.modal-group-section h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 6px;
+}
+
+.switch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+/* INTERRUPTOR ESTILO SWITCH SLIDER */
+.switch-control {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-left: 48px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    user-select: none;
+}
+
+.switch-control input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.switch-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 22px;
+    width: 40px;
+    background-color: var(--bg-tertiary);
+    transition: .3s;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.switch-control input:checked + .switch-slider {
+    background-color: var(--accent-blue);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.switch-control input:checked + .switch-slider:before {
+    transform: translateX(18px);
+}
+
+.switch-label {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--bg-tertiary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
