@@ -884,9 +884,9 @@ function updateTicketValue(id, field, value) {
         // Atualiza na tela (linha específica da tabela)
         const row = dom.tbody.querySelector(`tr[data-id="${id}"]`);
         if (row) {
-            const inputLiquido = row.querySelector('.col-liquido');
-            const inputToneladas = row.querySelector('.col-toneladas');
-            const inputVolume = row.querySelector('.col-volume');
+            const inputLiquido = row.querySelector('input.col-liquido');
+            const inputToneladas = row.querySelector('input.col-toneladas');
+            const inputVolume = row.querySelector('input.col-volume');
             
             if (inputLiquido) inputLiquido.value = liquido > 0 || ticket.pesoBruto !== '' ? formatWeightKG(liquido) : '';
             if (inputToneladas) inputToneladas.value = toneladas > 0 || ticket.pesoBruto !== '' ? formatTons(toneladas) : '';
